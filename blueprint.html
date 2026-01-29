@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoHub - Blueprint & Layout Guide</title>
+    <style>
+        /* PornHub-style Color Palette */
+        :root {
+            --bg-color: #181818;
+            --text-color: #FFFFFF;
+            --accent-color: #FF9900;
+            --card-border: #2C2C2C;
+            --blueprint-border: #444;
+            --blueprint-bg: rgba(255, 153, 0, 0.05);
+            --blueprint-text: #FF9900;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Toolbar for Toggling Modes */
+        .mode-toolbar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: #000;
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid var(--accent-color);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+        }
+
+        .toggle-btn {
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .toggle-btn.secondary {
+            background: transparent;
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+        }
+
+        /* Section Container / Blueprint Styling */
+        .blueprint-section {
+            position: relative;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .wireframe-mode .blueprint-section {
+            border: 2px dashed var(--blueprint-border);
+            background: var(--blueprint-bg);
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .section-label {
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--accent-color);
+            color: #000;
+            padding: 2px 10px;
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            border-radius: 4px;
+            display: none;
+            z-index: 100;
+        }
+
+        .wireframe-mode .section-label {
+            display: block;
+        }
+
+        /* ACTUAL UI ELEMENTS Styles */
+        header {
+            background: #000;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        header h1 span {
+            background: var(--accent-color);
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 2px;
+        }
+
+        .btn-header {
+            background: transparent;
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Ad Slots */
+        .ad-slot {
+            width: 100%;
+            height: 120px;
+            background: #252525;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            color: #444;
+            font-weight: bold;
+            margin: 20px 0;
+            border: 1px solid var(--card-border);
+        }
+
+        /* Responsive Grid */
+        .video-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(1, 1fr);
+        }
+
+        @media (min-width: 600px) {
+            .video-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .video-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .video-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        /* Video Card UI */
+        .card {
+            background: #000;
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+            border-color: var(--accent-color);
+        }
+
+        .card-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #333;
+            position: relative;
+        }
+
+        .card-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-info {
+            padding: 10px;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .btn-share {
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            background: transparent;
+            padding: 2px 8px;
+            border-radius: 2px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .btn-share:hover {
+            background: var(--accent-color);
+            color: #000;
+        }
+
+        footer {
+            background: #000;
+            padding: 3rem;
+            text-align: center;
+            border-top: 1px solid var(--card-border);
+            margin-top: 3rem;
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        /* Wireframe Mode Overrides */
+        .wireframe-mode .card,
+        .wireframe-mode header,
+        .wireframe-mode footer,
+        .wireframe-mode .ad-slot {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .wireframe-mode .section-placeholder {
+            display: block !important;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        .section-placeholder {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="mode-toolbar">
+        <span style="font-size: 0.7rem; color: #888; text-transform: uppercase;">View Mode:</span>
+        <button class="toggle-btn" id="ui-btn">Actual UI</button>
+        <button class="toggle-btn secondary" id="wire-btn">Blueprint</button>
+    </div>
+
+    <div id="layout-wrapper">
+        <!-- HEADER BLUEPRINT -->
+        <div class="blueprint-section">
+            <span class="section-label">Header / Nav [Sticky]</span>
+            <header style="display: flex; justify-content: center; align-items: center; position: relative;">
+                <h1>Video<span>HUB</span></h1>
+                <div class="search-trigger" onclick="window.location.href='search.html'"
+                    style="cursor:pointer; position: absolute; right: 2rem; color: var(--accent-color); display: flex; align-items: center;"
+                    title="Search">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    </svg>
+                </div>
+                <div>
+                    <button class="btn-header">Login</button>
+                    <button class="btn-header"
+                        style="background: var(--accent-color); color: #000; margin-left: 10px;">Sign Up</button>
+                </div>
+            </header>
+            <div class="section-placeholder">Global Navigation & Branding</div>
+        </div>
+
+        <div class="container" id="main-content">
+            <!-- TOP AD BLUEPRINT -->
+            <div class="blueprint-section">
+                <span class="section-label">Ad Slot: Top Banner (Leaderboard)</span>
+                <div class="ad-slot">ADVERTISEMENT BNR-728X90</div>
+                <div class="section-placeholder">728x90 Billboard Ad Space</div>
+            </div>
+
+            <!-- MAIN CONTENT BLOCK -->
+            <div class="blueprint-section">
+                <span class="section-label">Main Video Grid (5 Columns Desktop)</span>
+                <div class="video-grid" id="video-grid">
+                    <!-- Cards injected here -->
+                </div>
+                <div class="section-placeholder">Responsive Grid: Desktop: 5 | Tablet: 3 | Mobile: 1</div>
+            </div>
+
+            <!-- MIDDLE AD BLUEPRINT -->
+            <div class="blueprint-section">
+                <span class="section-label">Ad Slot: Middle Content Card</span>
+                <div class="ad-slot"
+                    style="background: rgba(255,153,0,0.1); border-color: var(--accent-color); color: var(--accent-color);">
+                    PROMOTED CONTENT / IN-FEED AD</div>
+                <div class="section-placeholder">Inter-Grid Promo Area</div>
+            </div>
+
+            <!-- RECOMMENDED CONTENT -->
+            <div class="blueprint-section">
+                <span class="section-label">Recommended Videos Section</span>
+                <h3 style="margin-bottom: 20px; border-left: 4px solid var(--accent-color); padding-left: 10px;">
+                    Recommended for You</h3>
+                <div class="video-grid" id="rec-grid">
+                    <!-- Rec cards injected here -->
+                </div>
+                <div class="section-placeholder">Contextual Recommendation Engine</div>
+            </div>
+        </div>
+
+        <!-- FOOTER BLUEPRINT -->
+        <div class="blueprint-section">
+            <span class="section-label">Footer / Site Info</span>
+            <footer>
+                <div style="margin-bottom: 20px;">
+                    <a href="#" style="color: var(--accent-color); text-decoration: none; margin: 0 10px;">Terms</a>
+                    <a href="#" style="color: var(--accent-color); text-decoration: none; margin: 0 10px;">Privacy</a>
+                    <a href="#" style="color: var(--accent-color); text-decoration: none; margin: 0 10px;">DMCA</a>
+                </div>
+                <p>&copy; 2026 VideoHub Inc. All rights reserved.</p>
+            </footer>
+            <div class="section-placeholder">Links & Legal Documentation</div>
+        </div>
+    </div>
+
+    <script>
+        // Data helpers
+        const createCard = (title, thumbId) => `
+            <div class="card">
+                <div class="card-thumb">
+                    <img src="https://picsum.photos/seed/${thumbId}/400/225" />
+                </div>
+                <div class="card-info">
+                    <div class="card-title">${title}</div>
+                    <div class="card-footer">
+                        <span>12.5k views &bull; 2h ago</span>
+                        <button class="btn-share">Share</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const grid = document.getElementById('video-grid');
+        const recGrid = document.getElementById('rec-grid');
+
+        // Render mock data
+        let gridHtml = '';
+        for (let i = 0; i < 10; i++) gridHtml += createCard(`Elite Content Piece #${i + 1}`, `grid${i}`);
+        grid.innerHTML = gridHtml;
+
+        let recHtml = '';
+        for (let i = 0; i < 5; i++) recHtml += createCard(`Recommended Exclusive #${i + 1}`, `rec${i}`);
+        recGrid.innerHTML = recHtml;
+
+        // Mode Switching
+        const uiBtn = document.getElementById('ui-btn');
+        const wireBtn = document.getElementById('wire-btn');
+        const wrapper = document.body;
+
+        uiBtn.addEventListener('click', () => {
+            wrapper.classList.remove('wireframe-mode');
+            uiBtn.className = 'toggle-btn';
+            wireBtn.className = 'toggle-btn secondary';
+        });
+
+        wireBtn.addEventListener('click', () => {
+            wrapper.classList.add('wireframe-mode');
+            uiBtn.className = 'toggle-btn secondary';
+            wireBtn.className = 'toggle-btn';
+        });
+
+    </script>
+</body>
+
+</html>

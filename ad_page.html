@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoHub - Ad Preview</title>
+    <style>
+        /* PornHub-style Color Palette */
+        :root {
+            --bg-color: #181818;
+            --text-color: #FFFFFF;
+            --accent-color: #FF9900;
+            --card-border: #2C2C2C;
+            --disabled-color: #444444;
+            --overlay-bg: rgba(0, 0, 0, 0.8);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            padding: 1.5rem;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        header h1 span {
+            background: var(--accent-color);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 2px;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        /* Ad Container */
+        .ad-container {
+            width: 100%;
+            max-width: 800px;
+            background: #000;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+            position: relative;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .ad-media {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #252525;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .ad-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ad-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--accent-color);
+            color: #000;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Countdown and Button Area */
+        .timer-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        #countdown-text {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: #bbb;
+            transition: opacity 0.3s ease;
+        }
+
+        #countdown-text span {
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .continue-btn {
+            background-color: var(--disabled-color);
+            color: #888;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 4px;
+            cursor: not-allowed;
+            width: 100%;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0.6;
+            transform: scale(0.98);
+        }
+
+        .continue-btn.active {
+            background-color: var(--accent-color);
+            color: #000;
+            cursor: pointer;
+            opacity: 1;
+            transform: scale(1);
+            box-shadow: 0 4px 20px rgba(255, 153, 0, 0.3);
+        }
+
+        .continue-btn.active:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive Tweaks */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .ad-container {
+                border-radius: 4px;
+                margin-bottom: 1.5rem;
+            }
+
+            .continue-btn {
+                padding: 1.2rem;
+                font-size: 1rem;
+            }
+        }
+
+        /* Animation Classes */
+        .fade-out {
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header style="display: flex; justify-content: center; align-items: center; position: relative;">
+        <h1>Video<span>HUB</span></h1>
+        <div class="header-actions"
+            style="position: absolute; right: 2rem; display: flex; gap: 15px; align-items: center;">
+            <div class="upload-trigger" onclick="toggleUploadModal(true)"
+                style="cursor:pointer; color: var(--accent-color); display: flex; align-items: center;"
+                title="Upload Video">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5 20h14v-2H5v2zm0-10h4v6h6v-6h4l-7-7-7 7z" />
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="ad-container">
+            <span class="ad-badge">Advertisement</span>
+            <div class="ad-media">
+                <img src="https://via.placeholder.com/800x450/252525/FF9900?text=Premium+Ad+Content"
+                    alt="Advertisement">
+            </div>
+        </div>
+
+        <div class="timer-container">
+            <p id="countdown-text">Continue to video in <span id="seconds">5</span> seconds...</p>
+            <button id="continue-btn" class="continue-btn" disabled>Continue to Video</button>
+        </div>
+    </main>
+
+    <!-- Submit Video Modal -->
+    <div id="upload-modal" class="modal-overlay" onclick="if(event.target === this) toggleUploadModal(false)">
+        <style>
+            .modal-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.85);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+                backdrop-filter: blur(5px);
+                animation: fadeIn 0.3s ease;
+            }
+
+            .modal-content {
+                background: #000;
+                border: 1px solid var(--card-border);
+                border-radius: 12px;
+                padding: 2.5rem;
+                width: 90%;
+                max-width: 450px;
+                position: relative;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            }
+
+            @media (max-width: 600px) {
+                .modal-content {
+                    width: 100%;
+                    height: 100%;
+                    max-width: none;
+                    border-radius: 0;
+                    padding: 4rem 1.5rem 2rem;
+                    overflow-y: auto;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .modal-close {
+                    top: 20px;
+                    right: 20px;
+                    font-size: 2rem;
+                }
+            }
+
+            .modal-close {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: none;
+                border: none;
+                color: #888;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            .modal-input {
+                width: 100%;
+                padding: 12px 15px;
+                background: #1a1a1a;
+                border: 1px solid var(--card-border);
+                border-radius: 6px;
+                color: #fff;
+                margin-bottom: 1rem;
+                outline: none;
+                font-size: 1rem;
+            }
+
+            .modal-btn {
+                width: 100%;
+                padding: 12px;
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+                text-transform: uppercase;
+                cursor: pointer;
+                background: var(--accent-color);
+                color: #000;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+        </style>
+        <div class="modal-content">
+            <button class="modal-close" onclick="toggleUploadModal(false)">&times;</button>
+            <h2 style="margin-bottom: 1rem; text-align: center; text-transform: uppercase;">Submit Video</h2>
+            <p style="text-align: center; font-size: 0.9rem; color: #888; margin-bottom: 1.5rem;">
+                Your video will be reviewed by admin. You will be contacted if approved.
+            </p>
+            <form id="upload-form" onsubmit="handleVideoSubmission(event)">
+                <input type="text" id="video-title" placeholder="Video Title" class="modal-input" required>
+                <div style="margin-bottom: 1rem;">
+                    <label for="video-file"
+                        style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #888;">Video File (MP4,
+                        WEBM, MOV)</label>
+                    <input type="file" id="video-file" class="modal-input" accept="video/mp4,video/webm,video/quicktime"
+                        required style="padding: 10px;">
+                    <p style="font-size: 0.75rem; color: #555; margin-top: -10px;">Max file size: 500MB (example
+                        placeholder)</p>
+                </div>
+                <select id="video-category" class="modal-input" required
+                    style="background: #1a1a1a; color: #fff; appearance: none;">
+                    <option value="" disabled selected>Select Category</option>
+                    <option value="TikTok">TikTok</option>
+                    <option value="Actress">Actress</option>
+                    <option value="Desi">Desi</option>
+                    <option value="Rape">Rape</option>
+                    <option value="Pakistan">Pakistan</option>
+                    <option value="India">India</option>
+                    <option value="Afghan">Afghan</option>
+                    <option value="Bangal">Bangal</option>
+                    <option value="Arab">Arab</option>
+                </select>
+                <textarea id="video-desc" placeholder="Description (optional)" class="modal-input"
+                    style="min-height: 80px; resize: vertical;"></textarea>
+                <input type="email" id="contact-email" placeholder="Contact Email" class="modal-input" required>
+
+                <!-- Progress Bar UI -->
+                <div id="upload-progress-container" style="display: none; margin-bottom: 1.5rem;">
+                    <div
+                        style="height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+                        <div id="upload-progress-bar"
+                            style="width: 0%; height: 100%; background: var(--accent-color); transition: width 0.3s ease;">
+                        </div>
+                    </div>
+                    <p id="upload-status"
+                        style="font-size: 0.8rem; color: var(--accent-color); text-align: center; font-weight: bold;">
+                        Uploading... 0%</p>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="submit" id="submit-request-btn" class="modal-btn">Submit Request</button>
+                    <button type="button" class="modal-btn" style="background: #333; color: #fff;"
+                        onclick="toggleUploadModal(false)">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const secondsEl = document.getElementById('seconds');
+        const countdownText = document.getElementById('countdown-text');
+        const continueBtn = document.getElementById('continue-btn');
+
+        let timeLeft = 5;
+
+        const timer = setInterval(() => {
+            timeLeft--;
+            secondsEl.textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                enableButton();
+            }
+        }, 1000);
+
+        function enableButton() {
+            // Smoothly fade out the countdown text
+            countdownText.classList.add('fade-out');
+
+            // Enable the button after a small delay to match the fade animation
+            setTimeout(() => {
+                countdownText.style.display = 'none';
+                continueBtn.disabled = false;
+                continueBtn.classList.add('active');
+            }, 300);
+        }
+
+        continueBtn.addEventListener('click', () => {
+            if (!continueBtn.disabled) {
+                alert('Navigating to your video...');
+                // In a real scenario: window.location.href = 'video_url';
+            }
+        });
+
+        function toggleUploadModal(show) {
+            const modal = document.getElementById('upload-modal');
+            modal.style.display = show ? 'flex' : 'none';
+            if (show) document.body.style.overflow = 'hidden';
+            else document.body.style.overflow = 'auto';
+        }
+
+        function handleVideoSubmission(event) {
+            event.preventDefault();
+            const title = document.getElementById('video-title').value;
+            const fileInput = document.getElementById('video-file');
+            const category = document.getElementById('video-category').value;
+            const desc = document.getElementById('video-desc').value;
+            const email = document.getElementById('contact-email').value;
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Please select a video file.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const submitBtn = document.getElementById('submit-request-btn');
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const statusText = document.getElementById('upload-status');
+
+            // Disable UI and show progress
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.textContent = 'Uploading...';
+            progressContainer.style.display = 'block';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 100) progress = 100;
+
+                progressBar.style.width = progress + '%';
+                statusText.textContent = `Uploading... ${Math.round(progress)}%`;
+
+                if (progress === 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        const submission = {
+                            filename: file.name,
+                            title,
+                            category,
+                            desc,
+                            email,
+                            status: 'Pending',
+                            date: new Date().toISOString()
+                        };
+
+                        // Store metadata in localStorage
+                        const submissions = JSON.parse(localStorage.getItem('video_submissions') || '[]');
+                        submissions.push(submission);
+                        localStorage.setItem('video_submissions', JSON.stringify(submissions));
+
+                        alert('Your video has been sent to admin for review.');
+
+                        // Reset UI
+                        event.target.reset();
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                        submitBtn.textContent = 'Submit Request';
+                        progressContainer.style.display = 'none';
+                        progressBar.style.width = '0%';
+                        toggleUploadModal(false);
+                    }, 500);
+                }
+            }, 300);
+        }
+    </script>
+</body>
+
+</html>

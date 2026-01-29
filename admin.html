@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoHub Admin - Control Panel</title>
+    <style>
+        /* PornHub-style Color Palette */
+        :root {
+            --bg-color: #181818;
+            --text-color: #FFFFFF;
+            --accent-color: #FF9900;
+            --card-border: #2C2C2C;
+            --input-bg: #252525;
+            --danger: #ff4444;
+            --success: #00c851;
+            --drawer-bg: #181818;
+            --drawer-width: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: #000;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .drawer-toggle {
+            cursor: pointer;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .drawer-toggle:hover {
+            color: var(--accent-color);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        header h1 span {
+            background: var(--accent-color);
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 2px;
+        }
+
+        /* Drawer Styles */
+        .drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1999;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: calc(-1 * var(--drawer-width));
+            width: var(--drawer-width);
+            height: 100%;
+            background: var(--drawer-bg);
+            z-index: 2000;
+            transition: left 0.3s ease;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .drawer.open {
+            left: 0;
+        }
+
+        .drawer-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-content {
+            padding: 1rem 0;
+        }
+
+        .drawer-item {
+            padding: 12px 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            color: #ddd;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .drawer-item:hover {
+            background: #222;
+            color: var(--accent-color);
+        }
+
+        .subcategory-list {
+            display: none;
+            background: #111;
+            padding: 5px 0;
+        }
+
+        .subcategory-item {
+            padding: 8px 1.5rem 8px 3.5rem;
+            font-size: 0.9rem;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .subcategory-item:hover {
+            color: var(--accent-color);
+        }
+
+        .drawer-section-title {
+            padding: 1.5rem 1.5rem 0.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logout-btn {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            background: transparent;
+            border: 1px solid #444;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Login Section */
+        #login-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .login-card {
+            background: #000;
+            padding: 2.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-card h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #bbb;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        /* Admin Content Area */
+        #admin-content {
+            display: none;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background: #000;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+        }
+
+        .panel-card h3 {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.5rem;
+            color: var(--accent-color);
+        }
+
+        /* Video List */
+        .video-list-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--card-border);
+            align-items: center;
+            background: #111;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .video-list-item img {
+            width: 100px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #333;
+        }
+
+        .video-details {
+            flex: 1;
+        }
+
+        .video-details h4 {
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .video-details p {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            border-radius: 2px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            border: 1px solid transparent;
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer(false)"></div>
+    <div class="drawer" id="drawer">
+        <div class="drawer-header">
+            <h1 style="font-size: 1.2rem; cursor: pointer;" onclick="window.location.href='index.html'">
+                Video<span>HUB</span></h1>
+            <div class="drawer-toggle" onclick="toggleDrawer(false)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+            </div>
+        </div>
+        <div class="drawer-content">
+            <div class="drawer-item" onclick="toggleSubcategories()">
+                <span>Categories</span>
+                <svg id="cat-arrow" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"
+                    style="margin-left: auto; transition: transform 0.3s;">
+                    <path d="M7 10l5 5 5-5z" />
+                </svg>
+            </div>
+            <div class="subcategory-list" id="subcategory-list">
+                <div class="subcategory-item" onclick="window.location.href='index.html'">TikTok</div>
+                <div class="subcategory-item" onclick="window.location.href='index.html'">Actress</div>
+                <div class="subcategory-item" onclick="window.location.href='index.html'">Desi</div>
+                <div class="subcategory-item" onclick="window.location.href='index.html'">Rape</div>
+                <div class="subcategory-item" onclick="window.location.href='index.html'">Pakistan</div>
+                <div class="subcategory-item" onclick="window.location.href='index.html'">India</div>
+                <div class="subcategory-item" onclick="window.location.href='index.html'">Afghan</div>
+                <div class="subcategory-item" onclick="window.location.href='index.html'">Bangal</div>
+                <div class="subcategory-item" onclick="window.location.href='index.html'">Arab</div>
+                <div class="subcategory-item" onclick="window.location.href='index.html'">All</div>
+            </div>
+            <div class="drawer-section-title">Information</div>
+            <a href="#" class="drawer-item">About Us</a>
+            <a href="#" class="drawer-item">Privacy Policy</a>
+            <a href="#" class="drawer-item">Terms of Service</a>
+            <div class="drawer-section-title">Admin</div>
+            <a href="admin.html" class="drawer-item" style="color: var(--accent-color);">Admin Panel</a>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-left">
+            <div class="drawer-toggle" onclick="toggleDrawer(true)">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                </svg>
+            </div>
+            <h1 onclick="window.location.href='index.html'">Admin<span>PANEL</span></h1>
+        </div>
+        <div class="header-actions">
+            <div class="search-trigger" onclick="window.location.href='search.html'"
+                style="cursor:pointer; color: var(--accent-color);" title="Search">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                </svg>
+            </div>
+            <button id="logout-btn" class="logout-btn" style="display: none;" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Login Section -->
+        <section id="login-section">
+            <div class="login-card">
+                <h2>Admin Login</h2>
+                <div id="error-msg"
+                    style="color: var(--danger); font-size: 0.85rem; margin-bottom: 1rem; text-align: center; display: none;">
+                    Invalid credentials. Try admin/admin123</div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password">
+                </div>
+                <button class="btn-primary" onclick="login()">Sign In</button>
+            </div>
+        </section>
+
+        <!-- Admin Content Section -->
+        <section id="admin-content">
+            <div class="dashboard-grid">
+                <!-- Left: Upload Form -->
+                <div class="panel-card">
+                    <h3>Upload New Video</h3>
+                    <div class="form-group">
+                        <label>Video Title</label>
+                        <input type="text" id="video-title" placeholder="e.g. Hiking Adventure">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="video-category">
+                            <option value="TikTok">TikTok</option>
+                            <option value="Actress">Actress</option>
+                            <option value="Desi">Desi</option>
+                            <option value="Rape">Rape</option>
+                            <option value="Pakistan">Pakistan</option>
+                            <option value="India">India</option>
+                            <option value="Afghan">Afghan</option>
+                            <option value="Bangal">Bangal</option>
+                            <option value="Arab">Arab</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="video-desc" rows="3" placeholder="Tell viewers about this video"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Thumbnail URL</label>
+                        <input type="text" id="video-thumb" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label>Video URL (.mp4)</label>
+                        <input type="text" id="video-url" placeholder="https://...">
+                    </div>
+                    <button class="btn-primary" onclick="addVideo()">Post Video</button>
+                </div>
+
+                <!-- Right: Video List -->
+                <div class="panel-card">
+                    <h3>Manage Videos (<span id="count">0</span>)</h3>
+                    <div id="video-list">
+                        <!-- Items injected here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function toggleDrawer(open) {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            if (open) {
+                drawer.classList.add('open');
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+                document.body.style.overflow = 'hidden';
+            } else {
+                drawer.classList.remove('open');
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function toggleSubcategories() {
+            const list = document.getElementById('subcategory-list');
+            const arrow = document.getElementById('cat-arrow');
+            const isVisible = list.style.display === 'block';
+            list.style.display = isVisible ? 'none' : 'block';
+            arrow.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+
+        // Mock Data Persistence
+        let videos = JSON.parse(sessionStorage.getItem('videos')) || [
+            { id: 1, title: 'Sample Nature Clip', category: 'TikTok', desc: 'Beautiful landscape', thumb: 'https://picsum.photos/seed/a/200/120', url: '#' },
+            { id: 2, title: 'Actress Interview', category: 'Actress', desc: 'Build an admin panel', thumb: 'https://picsum.photos/seed/b/200/120', url: '#' }
+        ];
+
+        function login() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const error = document.getElementById('error-msg');
+
+            if (user === 'admin' && pass === 'admin123') {
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                document.getElementById('logout-btn').style.display = 'block';
+                renderVideos();
+            } else {
+                error.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            document.getElementById('login-section').style.display = 'flex';
+            document.getElementById('admin-content').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function renderVideos() {
+            const list = document.getElementById('video-list');
+            const count = document.getElementById('count');
+            count.innerText = videos.length;
+
+            list.innerHTML = videos.map(v => `
+                <div class="video-list-item">
+                    <img src="${v.thumb}" alt="thumb">
+                    <div class="video-details">
+                        <h4>${v.title} <span style="font-size:0.7rem; background:#333; padding:2px 5px; border-radius:3px; color:var(--accent-color); margin-left:5px;">${v.category}</span></h4>
+                        <p>${v.url}</p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-small logout-btn" onclick="alert('Edit functionality not implemented')">Edit</button>
+                        <button class="btn-small btn-danger" onclick="deleteVideo(${v.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+
+            sessionStorage.setItem('videos', JSON.stringify(videos));
+        }
+
+        function addVideo() {
+            const title = document.getElementById('video-title').value;
+            const category = document.getElementById('video-category').value;
+            const desc = document.getElementById('video-desc').value;
+            const thumb = document.getElementById('video-thumb').value;
+            const url = document.getElementById('video-url').value;
+
+            if (!title || !thumb || !url) {
+                alert('Please fill in title, thumbnail, and video URL');
+                return;
+            }
+
+            const newVideo = {
+                id: Date.now(),
+                title,
+                category,
+                desc,
+                thumb,
+                url
+            };
+
+            videos.unshift(newVideo);
+            renderVideos();
+
+            // Clear form
+            document.getElementById('video-title').value = '';
+            document.getElementById('video-desc').value = 'TikTok';
+            document.getElementById('video-desc').value = '';
+            document.getElementById('video-thumb').value = '';
+            document.getElementById('video-url').value = '';
+
+            alert('Video added successfully!');
+        }
+
+        // Fix for clearing category select
+        document.getElementById('video-category').value = 'TikTok';
+
+        function deleteVideo(id) {
+            if (confirm('Are you sure you want to delete this video?')) {
+                videos = videos.filter(v => v.id !== id);
+                renderVideos();
+            }
+        }
+    </script>
+</body>
+
+</html>

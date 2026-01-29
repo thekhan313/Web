@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoHub - Premium Homepage</title>
+    <style>
+        /* PornHub-style Color Palette */
+        :root {
+            --bg-color: #181818;
+            --text-color: #FFFFFF;
+            --accent-color: #FF9900;
+            --card-border: #2C2C2C;
+            --overlay-bg: rgba(0, 0, 0, 0.8);
+            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            --drawer-bg: #181818;
+            --drawer-width: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            padding: 1rem 1.5rem;
+            background: #000;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .header-left,
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100px;
+            /* Offset for centering logo */
+        }
+
+        .header-actions {
+            justify-content: flex-end;
+        }
+
+        .drawer-toggle {
+            cursor: pointer;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .drawer-toggle:hover {
+            color: var(--accent-color);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            cursor: pointer;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+
+        header h1 span {
+            background: var(--accent-color);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 2px;
+        }
+
+        /* Drawer Styles */
+        .drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1999;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: calc(-1 * var(--drawer-width));
+            width: var(--drawer-width);
+            height: 100%;
+            background: var(--drawer-bg);
+            z-index: 2000;
+            transition: left 0.3s ease;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .drawer.open {
+            left: 0;
+        }
+
+        .drawer-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-content {
+            padding: 1rem 0;
+        }
+
+        .drawer-item {
+            padding: 12px 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            color: #ddd;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .drawer-item:hover {
+            background: #222;
+            color: var(--accent-color);
+        }
+
+        .drawer-item.active {
+            color: var(--accent-color);
+            border-left: 4px solid var(--accent-color);
+            padding-left: calc(1.5rem - 4px);
+        }
+
+        .subcategory-list {
+            display: none;
+            background: #111;
+            padding: 5px 0;
+        }
+
+        .subcategory-item {
+            padding: 8px 1.5rem 8px 3.5rem;
+            font-size: 0.9rem;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .subcategory-item:hover {
+            color: var(--accent-color);
+        }
+
+        .subcategory-item.active {
+            color: var(--accent-color);
+        }
+
+        .drawer-section-title {
+            padding: 1.5rem 1.5rem 0.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        /* Container & Grid */
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .video-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(1, 1fr);
+        }
+
+        @media (min-width: 600px) {
+            .video-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .video-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .video-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (min-width: 1400px) {
+            .video-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        /* Video Card Styling */
+        .card {
+            background: #000;
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            border-color: var(--accent-color);
+            transform: scale(1.05);
+            z-index: 5;
+        }
+
+        .card-img-container {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: #333;
+        }
+
+        .card-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--overlay-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            text-align: center;
+            padding: 15px;
+        }
+
+        .card:hover .overlay {
+            opacity: 1;
+        }
+
+        .overlay-title {
+            color: #fff;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .overlay-accent {
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .card-info {
+            padding: 12px;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #ddd;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.2;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .share-btn {
+            background: none;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+
+        .share-btn:hover {
+            background: var(--accent-color);
+            color: #000;
+        }
+
+        /* Ad Card Styling */
+        .ad-card {
+            background: #252525;
+            border: 2px dashed #444;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--accent-color);
+            padding: 20px;
+            min-height: 200px;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+
+        .ad-card:hover {
+            border-color: var(--accent-color);
+        }
+
+        .ad-card h3 {
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .ad-card p {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-color);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: none;
+            z-index: 2005;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Login Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: #000;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        @media (max-width: 600px) {
+            .modal-content {
+                width: 100%;
+                height: 100%;
+                max-width: none;
+                border-radius: 0;
+                padding: 4rem 1.5rem 2rem;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .modal-close {
+                top: 20px;
+                right: 20px;
+                font-size: 2rem;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: #1a1a1a;
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            color: #fff;
+            margin-bottom: 1rem;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .modal-input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--accent-color);
+            color: #000;
+            margin-top: 5px;
+        }
+
+        .modal-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer(false)"></div>
+    <div class="drawer" id="drawer">
+        <div class="drawer-header">
+            <h1 style="font-size: 1.2rem; cursor: pointer;" onclick="window.location.href='index.html'">
+                Video<span>HUB</span></h1>
+            <div class="drawer-toggle" onclick="toggleDrawer(false)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+            </div>
+        </div>
+        <div class="drawer-content">
+            <a href="index.html" class="drawer-item active">
+                <span>Home</span>
+            </a>
+            <div class="drawer-item" onclick="toggleSubcategories()">
+                <span>Categories</span>
+                <svg id="cat-arrow" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"
+                    style="margin-left: auto; transition: transform 0.3s;">
+                    <path d="M7 10l5 5 5-5z" />
+                </svg>
+            </div>
+            <div class="subcategory-list" id="subcategory-list">
+                <div class="subcategory-item" onclick="filterByCategory('TikTok')">TikTok</div>
+                <div class="subcategory-item" onclick="filterByCategory('Actress')">Actress</div>
+                <div class="subcategory-item" onclick="filterByCategory('Desi')">Desi</div>
+                <div class="subcategory-item" onclick="filterByCategory('Rape')">Rape</div>
+                <div class="subcategory-item" onclick="filterByCategory('Pakistan')">Pakistan</div>
+                <div class="subcategory-item" onclick="filterByCategory('India')">India</div>
+                <div class="subcategory-item" onclick="filterByCategory('Afghan')">Afghan</div>
+                <div class="subcategory-item" onclick="filterByCategory('Bangal')">Bangal</div>
+                <div class="subcategory-item" onclick="filterByCategory('Arab')">Arab</div>
+                <div class="subcategory-item" onclick="filterByCategory('All')">All</div>
+            </div>
+            <div class="drawer-section-title">Information</div>
+            <a href="#" class="drawer-item">About</a>
+            <a href="#" class="drawer-item">Privacy Policy</a>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-left">
+            <div class="drawer-toggle" onclick="toggleDrawer(true)">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                </svg>
+            </div>
+        </div>
+        <h1 onclick="window.location.href='index.html'">Video<span>HUB</span></h1>
+        <div class="header-actions">
+            <div class="search-trigger" onclick="window.location.href='search.html'"
+                style="cursor:pointer; color: var(--accent-color);" title="Search">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                </svg>
+            </div>
+            <div class="upload-trigger" onclick="toggleUploadModal(true)"
+                style="cursor:pointer; color: var(--accent-color);" title="Upload Video">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5 20h14v-2H5v2zm0-10h4v6h6v-6h4l-7-7-7 7z" />
+                </svg>
+            </div>
+            <div class="profile-trigger" onclick="toggleModal(true)" style="cursor:pointer; color: var(--accent-color);"
+                title="Profile">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="category-badge"
+            style="display:none; margin-bottom: 1.5rem; color: var(--accent-color); text-transform: uppercase; font-weight: bold; font-size: 0.9rem;">
+            Filtering: <span id="current-cat"></span>
+        </div>
+        <div class="video-grid" id="main-grid"></div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal-overlay" onclick="if(event.target === this) toggleModal(false)">
+        <div class="modal-content">
+            <button class="modal-close" onclick="toggleModal(false)">&times;</button>
+            <h2 style="margin-bottom: 1.5rem; text-align: center; text-transform: uppercase;">Login</h2>
+            <input type="email" placeholder="Username / Email" class="modal-input">
+            <input type="password" placeholder="Password" class="modal-input">
+            <button class="modal-btn">Sign In</button>
+        </div>
+    </div>
+
+    <!-- Submit Video Modal -->
+    <div id="upload-modal" class="modal-overlay" onclick="if(event.target === this) toggleUploadModal(false)">
+        <div class="modal-content">
+            <button class="modal-close" onclick="toggleUploadModal(false)">&times;</button>
+            <h2 style="margin-bottom: 1rem; text-align: center; text-transform: uppercase;">Submit Video</h2>
+            <p style="text-align: center; font-size: 0.9rem; color: #888; margin-bottom: 1.5rem;">
+                Your video will be reviewed by admin. You will be contacted if approved.
+            </p>
+            <form id="upload-form" onsubmit="handleVideoSubmission(event)">
+                <input type="text" id="video-title" placeholder="Video Title" class="modal-input" required>
+                <div style="margin-bottom: 1rem;">
+                    <label for="video-file"
+                        style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #888;">Video File (MP4,
+                        WEBM, MOV)</label>
+                    <input type="file" id="video-file" class="modal-input" accept="video/mp4,video/webm,video/quicktime"
+                        required style="padding: 10px;">
+                    <p style="font-size: 0.75rem; color: #555; margin-top: -10px;">Max file size: 500MB (example
+                        placeholder)</p>
+                </div>
+                <select id="video-category" class="modal-input" required
+                    style="background: #1a1a1a; color: #fff; appearance: none;">
+                    <option value="" disabled selected>Select Category</option>
+                    <option value="TikTok">TikTok</option>
+                    <option value="Actress">Actress</option>
+                    <option value="Desi">Desi</option>
+                    <option value="Rape">Rape</option>
+                    <option value="Pakistan">Pakistan</option>
+                    <option value="India">India</option>
+                    <option value="Afghan">Afghan</option>
+                    <option value="Bangal">Bangal</option>
+                    <option value="Arab">Arab</option>
+                </select>
+                <textarea id="video-desc" placeholder="Description (optional)" class="modal-input"
+                    style="min-height: 80px; resize: vertical;"></textarea>
+                <input type="email" id="contact-email" placeholder="Contact Email" class="modal-input" required>
+
+                <!-- Progress Bar UI -->
+                <div id="upload-progress-container" style="display: none; margin-bottom: 1.5rem;">
+                    <div
+                        style="height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+                        <div id="upload-progress-bar"
+                            style="width: 0%; height: 100%; background: var(--accent-color); transition: width 0.3s ease;">
+                        </div>
+                    </div>
+                    <p id="upload-status"
+                        style="font-size: 0.8rem; color: var(--accent-color); text-align: center; font-weight: bold;">
+                        Uploading... 0%</p>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="submit" id="submit-request-btn" class="modal-btn">Submit Request</button>
+                    <button type="button" class="modal-btn" style="background: #333; color: #fff;"
+                        onclick="toggleUploadModal(false)">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Link copied to clipboard!</div>
+
+    <script>
+        function toggleModal(show) {
+            const modal = document.getElementById('login-modal');
+            modal.style.display = show ? 'flex' : 'none';
+            if (show) document.body.style.overflow = 'hidden';
+            else if (!document.getElementById('drawer').classList.contains('open') && document.getElementById('upload-modal').style.display !== 'flex') document.body.style.overflow = 'auto';
+        }
+
+        function toggleUploadModal(show) {
+            const modal = document.getElementById('upload-modal');
+            modal.style.display = show ? 'flex' : 'none';
+            if (show) document.body.style.overflow = 'hidden';
+            else if (!document.getElementById('drawer').classList.contains('open') && document.getElementById('login-modal').style.display !== 'flex') document.body.style.overflow = 'auto';
+        }
+
+        function handleVideoSubmission(event) {
+            event.preventDefault();
+            const title = document.getElementById('video-title').value;
+            const fileInput = document.getElementById('video-file');
+            const category = document.getElementById('video-category').value;
+            const desc = document.getElementById('video-desc').value;
+            const email = document.getElementById('contact-email').value;
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Please select a video file.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const submitBtn = document.getElementById('submit-request-btn');
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const statusText = document.getElementById('upload-status');
+
+            // Disable UI and show progress
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.textContent = 'Uploading...';
+            progressContainer.style.display = 'block';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 100) progress = 100;
+
+                progressBar.style.width = progress + '%';
+                statusText.textContent = `Uploading... ${Math.round(progress)}%`;
+
+                if (progress === 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        const submission = {
+                            filename: file.name,
+                            title,
+                            category,
+                            desc,
+                            email,
+                            status: 'Pending',
+                            date: new Date().toISOString()
+                        };
+
+                        // Store metadata in localStorage
+                        const submissions = JSON.parse(localStorage.getItem('video_submissions') || '[]');
+                        submissions.push(submission);
+                        localStorage.setItem('video_submissions', JSON.stringify(submissions));
+
+                        alert('Your video has been sent to admin for review.');
+
+                        // Reset UI
+                        event.target.reset();
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                        submitBtn.textContent = 'Submit Request';
+                        progressContainer.style.display = 'none';
+                        progressBar.style.width = '0%';
+                        toggleUploadModal(false);
+                    }, 500);
+                }
+            }, 300);
+        }
+
+        function toggleDrawer(open) {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            if (open) {
+                drawer.classList.add('open');
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+                document.body.style.overflow = 'hidden';
+            } else {
+                drawer.classList.remove('open');
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+                if (document.getElementById('login-modal').style.display !== 'flex' && document.getElementById('upload-modal').style.display !== 'flex') document.body.style.overflow = 'auto';
+            }
+        }
+
+        function toggleSubcategories() {
+            const list = document.getElementById('subcategory-list');
+            const arrow = document.getElementById('cat-arrow');
+            const isVisible = list.style.display === 'block';
+            list.style.display = isVisible ? 'none' : 'block';
+            arrow.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+
+        const categories = ['TikTok', 'Actress', 'Desi', 'Rape', 'Pakistan', 'India', 'Afghan', 'Bangal', 'Arab'];
+
+        const videoData = Array.from({ length: 40 }, (_, i) => ({
+            id: i + 1,
+            title: `Exclusive Video Content #${i + 1} - Premium Pick`,
+            thumb: `https://picsum.photos/seed/vh${i + 1}/400/225`,
+            category: categories[Math.floor(Math.random() * categories.length)]
+        }));
+
+        const grid = document.getElementById('main-grid');
+        let currentFilter = 'All';
+
+        function filterByCategory(category) {
+            currentFilter = category;
+            document.querySelectorAll('.subcategory-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.innerText === category) item.classList.add('active');
+            });
+
+            const badge = document.getElementById('category-badge');
+            const catName = document.getElementById('current-cat');
+            if (category === 'All') {
+                badge.style.display = 'none';
+            } else {
+                badge.style.display = 'block';
+                catName.innerText = category;
+            }
+
+            renderGrid();
+            if (window.innerWidth < 768) toggleDrawer(false);
+        }
+
+        function renderGrid() {
+            const filtered = currentFilter === 'All' ? videoData : videoData.filter(v => v.category === currentFilter);
+
+            let html = '';
+
+            // First Ad Card
+            html += `<div class="ad-card">
+                        <h3>Premium Ad</h3>
+                        <p>Sponsored Content Placeholder</p>
+                    </div>`;
+
+            const middleIndex = Math.floor(filtered.length / 2);
+
+            filtered.forEach((video, index) => {
+                html += `
+                <div class="card" onclick="navigateToAd(${video.id})">
+                    <div class="card-img-container">
+                        <img src="${video.thumb}" alt="${video.title}" loading="lazy">
+                        <div class="overlay">
+                            <span class="overlay-title">${video.title}</span>
+                            <span class="overlay-accent">${video.category}</span>
+                        </div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">${video.title}</div>
+                        <div class="card-footer">
+                            <span style="font-size:0.75rem; color:#666">${video.category}</span>
+                            <button class="share-btn" onclick="shareVideo(event, ${video.id})">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></svg>
+                                Share
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Middle Ad Card
+                if (index === middleIndex && filtered.length > 5) {
+                    html += `<div class="ad-card">
+                                <h3>Exclusive Ad</h3>
+                                <p>Mid-Grid Content Placeholder</p>
+                            </div>`;
+                }
+            });
+
+            // Last Ad Card
+            html += `<div class="ad-card">
+                        <h3>Footer Ad</h3>
+                        <p>End of Results Placeholder</p>
+                    </div>`;
+
+            grid.innerHTML = html;
+        }
+
+        function navigateToAd(id) {
+            window.location.href = `ad.html?video=${id}`;
+        }
+
+        function shareVideo(event, id) {
+            event.stopPropagation();
+            const baseUrl = window.location.href.split('index.html')[0];
+            const shareUrl = `${baseUrl}ad.html?video=${id}`;
+
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                const toast = document.getElementById('toast');
+                toast.style.display = 'block';
+                setTimeout(() => toast.style.display = 'none', 2000);
+            });
+        }
+
+        renderGrid();
+        if (window.innerWidth > 900) toggleSubcategories();
+    </script>
+</body>
+
+</html>

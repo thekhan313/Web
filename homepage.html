@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoHub - Premium Homepage</title>
+    <style>
+        /* PornHub-style Color Palette */
+        :root {
+            --bg-color: #181818;
+            --text-color: #FFFFFF;
+            --accent-color: #FF9900;
+            --card-border: #2C2C2C;
+            --overlay-bg: rgba(0, 0, 0, 0.8);
+            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            padding: 1.5rem;
+            background: #000;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        header h1 span {
+            background: var(--accent-color);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 2px;
+        }
+
+        /* Responsive Navigation (Mobile friendly) */
+        nav {
+            background: #222;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        nav a:hover {
+            color: var(--accent-color);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Grid System */
+        .video-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(1, 1fr);
+            /* Mobile: 1 card */
+        }
+
+        @media (min-width: 600px) {
+            .video-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            /* Tablet small: 2 cards */
+        }
+
+        @media (min-width: 900px) {
+            .video-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            /* Tablet large: 3 cards */
+        }
+
+        @media (min-width: 1200px) {
+            .video-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+
+            /* Desktop: 5 cards */
+        }
+
+        /* Video Card */
+        .card {
+            background: #000;
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Hover Effect (Desktop) */
+        @media (min-width: 1024px) {
+            .card:hover {
+                transform: scale(1.05);
+                border-color: var(--accent-color);
+                box-shadow: var(--card-shadow);
+                z-index: 10;
+            }
+
+            .card .overlay {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: var(--overlay-bg);
+                padding: 10px;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+                text-align: center;
+            }
+
+            .card:hover .overlay {
+                opacity: 1;
+            }
+
+            .card:hover .overlay .title-hover {
+                color: #FFF;
+                font-weight: bold;
+                font-size: 1.1rem;
+            }
+        }
+
+        .card-img-container {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: #333;
+        }
+
+        .card-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-info {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #ddd;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        .share-btn {
+            background: none;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 4px 10px;
+            border-radius: 2px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .share-btn:hover {
+            background: var(--accent-color);
+            color: #000;
+        }
+
+        /* Ad Card */
+        .ad-card {
+            background: #252525;
+            border: 2px dashed #444;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--accent-color);
+            padding: 20px;
+            min-height: 200px;
+            border-radius: 4px;
+        }
+
+        .ad-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .ad-card p {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .ad-img {
+            width: 80%;
+            height: 100px;
+            background: #333;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #555;
+            border-radius: 4px;
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                margin: 1rem auto;
+            }
+
+            .card-title {
+                font-size: 1.1rem;
+            }
+
+            .share-btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header style="display: flex; justify-content: center; align-items: center; position: relative;">
+        <h1>Video<span>HUB</span></h1>
+        <div class="header-actions"
+            style="position: absolute; right: 2rem; display: flex; gap: 15px; align-items: center;">
+            <div class="upload-trigger" onclick="toggleUploadModal(true)"
+                style="cursor:pointer; color: var(--accent-color); display: flex; align-items: center;"
+                title="Upload Video">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5 20h14v-2H5v2zm0-10h4v6h6v-6h4l-7-7-7 7z" />
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">Trending</a>
+        <a href="#">Categories</a>
+        <a href="#">Live</a>
+    </nav>
+
+    <div class="container">
+        <div class="video-grid" id="main-grid">
+            <!-- Ad Card 1 (Top) -->
+            <div class="ad-card">
+                <h3>ADVERTISEMENT</h3>
+                <p>Join the best community online today!</p>
+                <div class="ad-img">AD SLOT 1</div>
+            </div>
+
+            <!-- Video Cards (Generated by JS) -->
+        </div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('main-grid');
+
+        const videoData = [
+            { title: "Breathtaking Mountain Landscapes in 4K", thumb: "https://picsum.photos/seed/vid1/400/225" },
+            { title: "How to Build a Modern Web App from Scratch", thumb: "https://picsum.photos/seed/vid2/400/225" },
+            { title: "Top 10 Travel Destinations for 2026", thumb: "https://picsum.photos/seed/vid3/400/225" },
+            { title: "Delicious Street Food Tour in Osaka", thumb: "https://picsum.photos/seed/vid4/400/225" },
+            { title: "The Secrets of Deep Sea Exploration", thumb: "https://picsum.photos/seed/vid5/400/225" },
+            { title: "Epic Cinematic Drone Footage 2025", thumb: "https://picsum.photos/seed/vid6/400/225" },
+            { title: "Mastering the Art of Digital Painting", thumb: "https://picsum.photos/seed/vid7/400/225" },
+            { title: "Urban Exploration: Hidden Tunnels", thumb: "https://picsum.photos/seed/vid8/400/225" },
+            { title: "Cyberpunk Cityscape Animation Loop", thumb: "https://picsum.photos/seed/vid9/400/225" },
+            { title: "Piano Cover: Relaxing Melodies", thumb: "https://picsum.photos/seed/vid10/400/225" },
+            { title: "Extreme Sports Compilation 2026", thumb: "https://picsum.photos/seed/vid11/400/225" },
+            { title: "Exploring the Ancient Ruins of Petra", thumb: "https://picsum.photos/seed/vid12/400/225" },
+            { title: "Advanced CSS Grid Layout Masterclass", thumb: "https://picsum.photos/seed/vid13/400/225" },
+            { title: "The Future of Artificial Intelligence", thumb: "https://picsum.photos/seed/vid14/400/225" },
+            { title: "Wildlife Documentary: The Great Migration", thumb: "https://picsum.photos/seed/vid15/400/225" },
+        ];
+
+        function createVideoCard(video) {
+            return `
+                <div class="card">
+                    <div class="card-img-container">
+                        <img src="${video.thumb}" alt="${video.title}" loading="lazy">
+                        <div class="overlay">
+                            <span class="title-hover">${video.title}</span>
+                            <button class="share-btn" style="margin-top: 15px;">Watch Now</button>
+                        </div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">${video.title}</div>
+                        <div class="card-footer">
+                            <span style="font-size: 0.8rem; color: #666;">2.4M views</span>
+                            <button class="share-btn">Share</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createAdCard(index) {
+            return `
+                <div class="ad-card">
+                    <h3>ADVERTISEMENT</h3>
+                    <p>Upgrade to Pro for an ad-free experience!</p>
+                    <div class="ad-img">AD SLOT ${index}</div>
+                </div>
+            `;
+        }
+
+        // Logic to insert middle and last ads
+        const middleIndex = Math.floor(videoData.length / 2);
+
+        let htmlContent = createAdCard(1); // Top Ad
+
+        videoData.forEach((video, index) => {
+            htmlContent += createVideoCard(video);
+
+            // Middle Ad
+            if (index === middleIndex) {
+                htmlContent += createAdCard(2);
+            }
+        });
+
+        htmlContent += createAdCard(3); // Last Ad
+
+        grid.innerHTML = htmlContent;
+    </script>
+    <!-- Submit Video Modal -->
+    <div id="upload-modal" class="modal-overlay" onclick="if(event.target === this) toggleUploadModal(false)">
+        <style>
+            .modal-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.85);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+                backdrop-filter: blur(5px);
+                animation: fadeIn 0.3s ease;
+            }
+
+            .modal-content {
+                background: #000;
+                border: 1px solid var(--card-border);
+                border-radius: 12px;
+                padding: 2.5rem;
+                width: 90%;
+                max-width: 450px;
+                position: relative;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            }
+
+            @media (max-width: 600px) {
+                .modal-content {
+                    width: 100%;
+                    height: 100%;
+                    max-width: none;
+                    border-radius: 0;
+                    padding: 4rem 1.5rem 2rem;
+                    overflow-y: auto;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .modal-close {
+                    top: 20px;
+                    right: 20px;
+                    font-size: 2rem;
+                }
+            }
+
+            .modal-close {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: none;
+                border: none;
+                color: #888;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            .modal-input {
+                width: 100%;
+                padding: 12px 15px;
+                background: #1a1a1a;
+                border: 1px solid var(--card-border);
+                border-radius: 6px;
+                color: #fff;
+                margin-bottom: 1rem;
+                outline: none;
+                font-size: 1rem;
+            }
+
+            .modal-btn {
+                width: 100%;
+                padding: 12px;
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+                text-transform: uppercase;
+                cursor: pointer;
+                background: var(--accent-color);
+                color: #000;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+        </style>
+        <div class="modal-content">
+            <button class="modal-close" onclick="toggleUploadModal(false)">&times;</button>
+            <h2 style="margin-bottom: 1rem; text-align: center; text-transform: uppercase;">Submit Video</h2>
+            <p style="text-align: center; font-size: 0.9rem; color: #888; margin-bottom: 1.5rem;">
+                Your video will be reviewed by admin. You will be contacted if approved.
+            </p>
+            <form id="upload-form" onsubmit="handleVideoSubmission(event)">
+                <input type="text" id="video-title" placeholder="Video Title" class="modal-input" required>
+                <div style="margin-bottom: 1rem;">
+                    <label for="video-file"
+                        style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #888;">Video File (MP4,
+                        WEBM, MOV)</label>
+                    <input type="file" id="video-file" class="modal-input" accept="video/mp4,video/webm,video/quicktime"
+                        required style="padding: 10px;">
+                    <p style="font-size: 0.75rem; color: #555; margin-top: -10px;">Max file size: 500MB (example
+                        placeholder)</p>
+                </div>
+                <select id="video-category" class="modal-input" required
+                    style="background: #1a1a1a; color: #fff; appearance: none;">
+                    <option value="" disabled selected>Select Category</option>
+                    <option value="TikTok">TikTok</option>
+                    <option value="Actress">Actress</option>
+                    <option value="Desi">Desi</option>
+                    <option value="Rape">Rape</option>
+                    <option value="Pakistan">Pakistan</option>
+                    <option value="India">India</option>
+                    <option value="Afghan">Afghan</option>
+                    <option value="Bangal">Bangal</option>
+                    <option value="Arab">Arab</option>
+                </select>
+                <textarea id="video-desc" placeholder="Description (optional)" class="modal-input"
+                    style="min-height: 80px; resize: vertical;"></textarea>
+                <input type="email" id="contact-email" placeholder="Contact Email" class="modal-input" required>
+
+                <!-- Progress Bar UI -->
+                <div id="upload-progress-container" style="display: none; margin-bottom: 1.5rem;">
+                    <div
+                        style="height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+                        <div id="upload-progress-bar"
+                            style="width: 0%; height: 100%; background: var(--accent-color); transition: width 0.3s ease;">
+                        </div>
+                    </div>
+                    <p id="upload-status"
+                        style="font-size: 0.8rem; color: var(--accent-color); text-align: center; font-weight: bold;">
+                        Uploading... 0%</p>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="submit" id="submit-request-btn" class="modal-btn">Submit Request</button>
+                    <button type="button" class="modal-btn" style="background: #333; color: #fff;"
+                        onclick="toggleUploadModal(false)">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleUploadModal(show) {
+            const modal = document.getElementById('upload-modal');
+            modal.style.display = show ? 'flex' : 'none';
+            if (show) document.body.style.overflow = 'hidden';
+            else document.body.style.overflow = 'auto';
+        }
+
+        function handleVideoSubmission(event) {
+            event.preventDefault();
+            const title = document.getElementById('video-title').value;
+            const fileInput = document.getElementById('video-file');
+            const category = document.getElementById('video-category').value;
+            const desc = document.getElementById('video-desc').value;
+            const email = document.getElementById('contact-email').value;
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Please select a video file.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const submitBtn = document.getElementById('submit-request-btn');
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const statusText = document.getElementById('upload-status');
+
+            // Disable UI and show progress
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.textContent = 'Uploading...';
+            progressContainer.style.display = 'block';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 100) progress = 100;
+
+                progressBar.style.width = progress + '%';
+                statusText.textContent = `Uploading... ${Math.round(progress)}%`;
+
+                if (progress === 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        const submission = {
+                            filename: file.name,
+                            title,
+                            category,
+                            desc,
+                            email,
+                            status: 'Pending',
+                            date: new Date().toISOString()
+                        };
+
+                        // Store metadata in localStorage
+                        const submissions = JSON.parse(localStorage.getItem('video_submissions') || '[]');
+                        submissions.push(submission);
+                        localStorage.setItem('video_submissions', JSON.stringify(submissions));
+
+                        alert('Your video has been sent to admin for review.');
+
+                        // Reset UI
+                        event.target.reset();
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                        submitBtn.textContent = 'Submit Request';
+                        progressContainer.style.display = 'none';
+                        progressBar.style.width = '0%';
+                        toggleUploadModal(false);
+                    }, 500);
+                }
+            }, 300);
+        }
+    </script>
+</body>
+
+</html>

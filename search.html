@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - VideoHub</title>
+    <style>
+        /* PornHub-style Color Palette */
+        :root {
+            --bg-color: #181818;
+            --text-color: #FFFFFF;
+            --accent-color: #FF9900;
+            --card-border: #2C2C2C;
+            --overlay-bg: rgba(0, 0, 0, 0.8);
+            --input-bg: #000000;
+            --drawer-bg: #181818;
+            --drawer-width: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            padding: 1rem 1.5rem;
+            background: #000;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .drawer-toggle {
+            cursor: pointer;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .drawer-toggle:hover {
+            color: var(--accent-color);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            cursor: pointer;
+        }
+
+        header h1 span {
+            background: var(--accent-color);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 2px;
+        }
+
+        /* Drawer Styles */
+        .drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1999;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: calc(-1 * var(--drawer-width));
+            width: var(--drawer-width);
+            height: 100%;
+            background: var(--drawer-bg);
+            z-index: 2000;
+            transition: left 0.3s ease;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .drawer.open {
+            left: 0;
+        }
+
+        .drawer-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-content {
+            padding: 1rem 0;
+        }
+
+        .drawer-item {
+            padding: 12px 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            color: #ddd;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .drawer-item:hover {
+            background: #222;
+            color: var(--accent-color);
+        }
+
+        .subcategory-list {
+            display: none;
+            background: #111;
+            padding: 5px 0;
+        }
+
+        .subcategory-item {
+            padding: 8px 1.5rem 8px 3.5rem;
+            font-size: 0.9rem;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .subcategory-item:hover {
+            color: var(--accent-color);
+        }
+
+        .drawer-section-title {
+            padding: 1.5rem 1.5rem 0.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        /* Search Section */
+        .search-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .search-bar-wrapper {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 3rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            max-width: 600px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            border: 1px solid var(--card-border);
+            background: var(--input-bg);
+            color: #fff;
+            font-size: 1.1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn-search {
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 0 30px;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: filter 0.2s;
+            height: 50px;
+        }
+
+        .btn-search:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Results Grid */
+        .section-header {
+            font-size: 1.4rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(1, 1fr);
+        }
+
+        @media (min-width: 600px) {
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .results-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .results-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        /* Card Styling */
+        .card {
+            background: #000;
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+            border-color: var(--accent-color);
+            z-index: 5;
+        }
+
+        .card-thumb {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: #252525;
+        }
+
+        .card-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--overlay-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .card:hover .card-overlay {
+            opacity: 1;
+        }
+
+        .overlay-title {
+            color: #fff;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .card-content {
+            padding: 10px;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #eee;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .share-btn {
+            background: none;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .share-btn:hover {
+            background: var(--accent-color);
+            color: #000;
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 600px) {
+            .search-bar-wrapper {
+                flex-direction: column;
+            }
+
+            .btn-search {
+                width: 100%;
+            }
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-color);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: none;
+            z-index: 2005;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer(false)"></div>
+    <div class="drawer" id="drawer">
+        <div class="drawer-header">
+            <h1 style="font-size: 1.2rem; cursor: pointer;" onclick="window.location.href='index.html'">
+                Video<span>HUB</span></h1>
+            <div class="drawer-toggle" onclick="toggleDrawer(false)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+            </div>
+        </div>
+        <div class="drawer-content">
+            <div class="drawer-item" onclick="toggleSubcategories()">
+                <span>Categories</span>
+                <svg id="cat-arrow" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"
+                    style="margin-left: auto; transition: transform 0.3s;">
+                    <path d="M7 10l5 5 5-5z" />
+                </svg>
+            </div>
+            <div class="subcategory-list" id="subcategory-list">
+                <div class="subcategory-item" onclick="filterByCategory('TikTok')">TikTok</div>
+                <div class="subcategory-item" onclick="filterByCategory('Actress')">Actress</div>
+                <div class="subcategory-item" onclick="filterByCategory('Desi')">Desi</div>
+                <div class="subcategory-item" onclick="filterByCategory('Rape')">Rape</div>
+                <div class="subcategory-item" onclick="filterByCategory('Pakistan')">Pakistan</div>
+                <div class="subcategory-item" onclick="filterByCategory('India')">India</div>
+                <div class="subcategory-item" onclick="filterByCategory('Afghan')">Afghan</div>
+                <div class="subcategory-item" onclick="filterByCategory('Bangal')">Bangal</div>
+                <div class="subcategory-item" onclick="filterByCategory('Arab')">Arab</div>
+                <div class="subcategory-item active" onclick="filterByCategory('All')">All</div>
+            </div>
+            <div class="drawer-section-title">Information</div>
+            <a href="#" class="drawer-item">About Us</a>
+            <a href="#" class="drawer-item">Privacy Policy</a>
+            <a href="#" class="drawer-item">Terms of Service</a>
+            <div class="drawer-section-title">Admin</div>
+            <a href="admin.html" class="drawer-item">Admin Panel</a>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-left">
+            <div class="drawer-toggle" onclick="toggleDrawer(true)">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                </svg>
+            </div>
+            <h1 onclick="window.location.href='index.html'">Video<span>HUB</span></h1>
+        </div>
+        <div class="header-actions" style="display: flex; gap: 1rem; align-items: center; margin-right: 1.5rem;">
+            <div class="upload-trigger" onclick="toggleUploadModal(true)"
+                style="cursor:pointer; color: var(--accent-color); display: flex; align-items: center;"
+                title="Upload Video">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5 20h14v-2H5v2zm0-10h4v6h6v-6h4l-7-7-7 7z" />
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <div class="search-container">
+        <!-- Search Bar -->
+        <div class="search-bar-wrapper">
+            <input type="text" id="search-input" class="search-input" placeholder="Search videos...">
+            <button class="btn-search" onclick="performSearch()">Search</button>
+        </div>
+
+        <!-- Results Grid -->
+        <div class="section-header">
+            <span id="results-count">Search Results</span>
+            <div id="category-badge"
+                style="display:none; color: var(--accent-color); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">
+                Category: <span id="current-cat"></span></div>
+        </div>
+
+        <div class="results-grid" id="results-grid">
+            <!-- Results injected here -->
+        </div>
+    </div>
+
+    <!-- Submit Video Modal -->
+    <div id="upload-modal" class="modal-overlay" onclick="if(event.target === this) toggleUploadModal(false)">
+        <style>
+            .modal-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.85);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+                backdrop-filter: blur(5px);
+                animation: fadeIn 0.3s ease;
+            }
+
+            .modal-content {
+                background: #000;
+                border: 1px solid var(--card-border);
+                border-radius: 12px;
+                padding: 2.5rem;
+                width: 90%;
+                max-width: 450px;
+                position: relative;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            }
+
+            @media (max-width: 600px) {
+                .modal-content {
+                    width: 100%;
+                    height: 100%;
+                    max-width: none;
+                    border-radius: 0;
+                    padding: 4rem 1.5rem 2rem;
+                    overflow-y: auto;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .modal-close {
+                    top: 20px;
+                    right: 20px;
+                    font-size: 2rem;
+                }
+            }
+
+            .modal-close {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: none;
+                border: none;
+                color: #888;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            .modal-input {
+                width: 100%;
+                padding: 12px 15px;
+                background: #1a1a1a;
+                border: 1px solid var(--card-border);
+                border-radius: 6px;
+                color: #fff;
+                margin-bottom: 1rem;
+                outline: none;
+                font-size: 1rem;
+            }
+
+            .modal-btn {
+                width: 100%;
+                padding: 12px;
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+                text-transform: uppercase;
+                cursor: pointer;
+                background: var(--accent-color);
+                color: #000;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+        </style>
+        <div class="modal-content">
+            <button class="modal-close" onclick="toggleUploadModal(false)">&times;</button>
+            <h2 style="margin-bottom: 1rem; text-align: center; text-transform: uppercase;">Submit Video</h2>
+            <p style="text-align: center; font-size: 0.9rem; color: #888; margin-bottom: 1.5rem;">
+                Your video will be reviewed by admin. You will be contacted if approved.
+            </p>
+            <form id="upload-form" onsubmit="handleVideoSubmission(event)">
+                <input type="text" id="video-title" placeholder="Video Title" class="modal-input" required>
+                <div style="margin-bottom: 1rem;">
+                    <label for="video-file"
+                        style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #888;">Video File (MP4,
+                        WEBM, MOV)</label>
+                    <input type="file" id="video-file" class="modal-input" accept="video/mp4,video/webm,video/quicktime"
+                        required style="padding: 10px;">
+                    <p style="font-size: 0.75rem; color: #555; margin-top: -10px;">Max file size: 500MB (example
+                        placeholder)</p>
+                </div>
+                <select id="video-category" class="modal-input" required
+                    style="background: #1a1a1a; color: #fff; appearance: none;">
+                    <option value="" disabled selected>Select Category</option>
+                    <option value="TikTok">TikTok</option>
+                    <option value="Actress">Actress</option>
+                    <option value="Desi">Desi</option>
+                    <option value="Rape">Rape</option>
+                    <option value="Pakistan">Pakistan</option>
+                    <option value="India">India</option>
+                    <option value="Afghan">Afghan</option>
+                    <option value="Bangal">Bangal</option>
+                    <option value="Arab">Arab</option>
+                </select>
+                <textarea id="video-desc" placeholder="Description (optional)" class="modal-input"
+                    style="min-height: 80px; resize: vertical;"></textarea>
+                <input type="email" id="contact-email" placeholder="Contact Email" class="modal-input" required>
+
+                <!-- Progress Bar UI -->
+                <div id="upload-progress-container" style="display: none; margin-bottom: 1.5rem;">
+                    <div
+                        style="height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+                        <div id="upload-progress-bar"
+                            style="width: 0%; height: 100%; background: var(--accent-color); transition: width 0.3s ease;">
+                        </div>
+                    </div>
+                    <p id="upload-status"
+                        style="font-size: 0.8rem; color: var(--accent-color); text-align: center; font-weight: bold;">
+                        Uploading... 0%</p>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="submit" id="submit-request-btn" class="modal-btn">Submit Request</button>
+                    <button type="button" class="modal-btn" style="background: #333; color: #fff;"
+                        onclick="toggleUploadModal(false)">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Link copied to clipboard!</div>
+
+    <script>
+        const grid = document.getElementById('results-grid');
+        const input = document.getElementById('search-input');
+        const countText = document.getElementById('results-count');
+
+        const categories = ['TikTok', 'Actress', 'Desi', 'Rape', 'Pakistan', 'India', 'Afghan', 'Bangal', 'Arab'];
+        let currentFilter = 'All';
+
+        function toggleDrawer(open) {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            if (open) {
+                drawer.classList.add('open');
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+                document.body.style.overflow = 'hidden';
+            } else {
+                drawer.classList.remove('open');
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+                if (document.getElementById('upload-modal').style.display !== 'flex') document.body.style.overflow = 'auto';
+            }
+        }
+
+        function toggleUploadModal(show) {
+            const modal = document.getElementById('upload-modal');
+            modal.style.display = show ? 'flex' : 'none';
+            if (show) document.body.style.overflow = 'hidden';
+            else if (!document.getElementById('drawer').classList.contains('open')) document.body.style.overflow = 'auto';
+        }
+
+        function handleVideoSubmission(event) {
+            event.preventDefault();
+            const title = document.getElementById('video-title').value;
+            const fileInput = document.getElementById('video-file');
+            const category = document.getElementById('video-category').value;
+            const desc = document.getElementById('video-desc').value;
+            const email = document.getElementById('contact-email').value;
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Please select a video file.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const submitBtn = document.getElementById('submit-request-btn');
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const statusText = document.getElementById('upload-status');
+
+            // Disable UI and show progress
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.textContent = 'Uploading...';
+            progressContainer.style.display = 'block';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 100) progress = 100;
+
+                progressBar.style.width = progress + '%';
+                statusText.textContent = `Uploading... ${Math.round(progress)}%`;
+
+                if (progress === 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        const submission = {
+                            filename: file.name,
+                            title,
+                            category,
+                            desc,
+                            email,
+                            status: 'Pending',
+                            date: new Date().toISOString()
+                        };
+
+                        // Store metadata in localStorage
+                        const submissions = JSON.parse(localStorage.getItem('video_submissions') || '[]');
+                        submissions.push(submission);
+                        localStorage.setItem('video_submissions', JSON.stringify(submissions));
+
+                        alert('Your video has been sent to admin for review.');
+
+                        // Reset UI
+                        event.target.reset();
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                        submitBtn.textContent = 'Submit Request';
+                        progressContainer.style.display = 'none';
+                        progressBar.style.width = '0%';
+                        toggleUploadModal(false);
+                    }, 500);
+                }
+            }, 300);
+        }
+
+        function toggleSubcategories() {
+            const list = document.getElementById('subcategory-list');
+            const arrow = document.getElementById('cat-arrow');
+            const isVisible = list.style.display === 'block';
+            list.style.display = isVisible ? 'none' : 'block';
+            arrow.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+
+        function filterByCategory(category) {
+            currentFilter = category;
+
+            // Update UI active state
+            document.querySelectorAll('.subcategory-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.innerText === category) item.classList.add('active');
+            });
+
+            const badge = document.getElementById('category-badge');
+            const catName = document.getElementById('current-cat');
+            if (category === 'All') {
+                badge.style.display = 'none';
+            } else {
+                badge.style.display = 'block';
+                catName.innerText = category;
+            }
+
+            performSearch();
+            if (window.innerWidth < 768) toggleDrawer(false);
+        }
+
+        // Check if there was a query in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialQuery = urlParams.get('q');
+        if (initialQuery) {
+            input.value = initialQuery;
+            performSearch();
+        } else {
+            // Render initial random "popular" results
+            renderResults();
+        }
+
+        function performSearch() {
+            const query = input.value.trim();
+
+            // Support filtering via drawer even without search text
+            if (query) {
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?q=' + encodeURIComponent(query);
+                window.history.pushState({ path: newUrl }, '', newUrl);
+                countText.textContent = `Results for "${query}"`;
+            } else if (currentFilter !== 'All') {
+                countText.textContent = `All videos in ${currentFilter}`;
+            } else {
+                countText.textContent = 'Popular Highlights';
+            }
+
+            renderResults(query);
+        }
+
+        function renderResults(filterText = '') {
+            const baseData = Array.from({ length: 40 }, (_, i) => ({
+                id: 500 + i,
+                title: filterText ? `${filterText} - Video Highlight #${i + 1}` : `Trending Feature #${i + 1}`,
+                thumb: `https://picsum.photos/seed/search${i + 1}/400/225`,
+                category: categories[Math.floor(Math.random() * categories.length)]
+            }));
+
+            const filtered = currentFilter === 'All' ? baseData : baseData.filter(v => v.category === currentFilter);
+
+            grid.innerHTML = filtered.map(v => `
+                <div class="card" onclick="goToAdPage(${v.id})">
+                    <div class="card-thumb">
+                        <img src="${v.thumb}" alt="${v.title}" loading="lazy">
+                        <div class="card-overlay">
+                            <span class="overlay-title">${v.title}</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">${v.title}</div>
+                        <div class="card-footer">
+                            <span>1.2M views &bull; ${v.category}</span>
+                            <button class="share-btn" onclick="shareVideo(event, ${v.id})">Share</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #666;">No results found for this search/category.</div>';
+            }
+        }
+
+        function goToAdPage(id) {
+            window.location.href = `ad.html?video=${id}`;
+        }
+
+        function shareVideo(event, id) {
+            event.stopPropagation();
+            const baseUrl = window.location.href.split('search.html')[0];
+            const shareUrl = `${baseUrl}ad.html?video=${id}`;
+
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                const toast = document.getElementById('toast');
+                toast.style.display = 'block';
+                setTimeout(() => toast.style.display = 'none', 2000);
+            });
+        }
+
+        // Handle Enter key
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+    </script>
+</body>
+
+</html>
