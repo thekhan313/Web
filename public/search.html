@@ -670,23 +670,34 @@
 
                 if (progress === 100) {
                     clearInterval(interval);
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         const submission = {
                             filename: file.name,
                             title,
                             category,
-                            desc,
+                            description: desc,
                             email,
-                            status: 'Pending',
                             date: new Date().toISOString()
                         };
 
-                        // Store metadata in localStorage
-                        const submissions = JSON.parse(localStorage.getItem('video_submissions') || '[]');
-                        submissions.push(submission);
-                        localStorage.setItem('video_submissions', JSON.stringify(submissions));
+                        try {
+                            const response = await fetch('/api/submit-video', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(submission)
+                            });
 
-                        alert('Your video has been sent to admin for review.');
+                            if (response.ok) {
+                                alert('Your video has been sent to admin for review.');
+                            } else {
+                                alert('Failed to submit video. Please try again.');
+                            }
+                        } catch (err) {
+                            console.error('Submission error:', err);
+                            alert('An error occurred during submission.');
+                        }
 
                         // Reset UI
                         event.target.reset();
@@ -711,6 +722,7 @@
 
         function filterByCategory(category) {
             currentFilter = category;
+            input.value = ''; // Clear search to enable category view
 
             // Update UI active state
             document.querySelectorAll('.subcategory-item').forEach(item => {
@@ -742,34 +754,41 @@
             renderResults();
         }
 
-        function performSearch() {
+        async function performSearch() {
             const query = input.value.trim();
+            let videos = [];
 
-            // Support filtering via drawer even without search text
-            if (query) {
-                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?q=' + encodeURIComponent(query);
-                window.history.pushState({ path: newUrl }, '', newUrl);
-                countText.textContent = `Results for "${query}"`;
-            } else if (currentFilter !== 'All') {
-                countText.textContent = `All videos in ${currentFilter}`;
-            } else {
-                countText.textContent = 'Popular Highlights';
+            try {
+                if (query) {
+                    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?q=' + encodeURIComponent(query);
+                    window.history.pushState({ path: newUrl }, '', newUrl);
+                    countText.textContent = `Results for "${query}"`;
+
+                    const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                    if (!response.ok) throw new Error('Search failed');
+                    videos = await response.json();
+                } else if (currentFilter !== 'All') {
+                    countText.textContent = `All videos in ${currentFilter}`;
+                    const response = await fetch(`/api/category/${encodeURIComponent(currentFilter)}`);
+                    if (!response.ok) throw new Error('Category fetch failed');
+                    videos = await response.json();
+                } else {
+                    countText.textContent = 'Popular Highlights';
+                    const response = await fetch('/api/videos');
+                    if (!response.ok) throw new Error('Fetch failed');
+                    videos = await response.json();
+                }
+
+                renderResults(videos);
+            } catch (err) {
+                console.error(err);
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #888;">Failed to load results.</div>';
             }
-
-            renderResults(query);
         }
 
-        function renderResults(filterText = '') {
-            const baseData = Array.from({ length: 40 }, (_, i) => ({
-                id: 500 + i,
-                title: filterText ? `${filterText} - Video Highlight #${i + 1}` : `Trending Feature #${i + 1}`,
-                thumb: `https://picsum.photos/seed/search${i + 1}/400/225`,
-                category: categories[Math.floor(Math.random() * categories.length)]
-            }));
+        function renderResults(videos) {
 
-            const filtered = currentFilter === 'All' ? baseData : baseData.filter(v => v.category === currentFilter);
-
-            grid.innerHTML = filtered.map(v => `
+            grid.innerHTML = videos.map(v => `
                 <div class="card" onclick="goToAdPage(${v.id})">
                     <div class="card-thumb">
                         <img src="${v.thumb}" alt="${v.title}" loading="lazy">
@@ -787,7 +806,7 @@
                 </div>
             `).join('');
 
-            if (filtered.length === 0) {
+            if (videos.length === 0) {
                 grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #666;">No results found for this search/category.</div>';
             }
         }

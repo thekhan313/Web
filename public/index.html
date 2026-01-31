@@ -294,6 +294,7 @@
             margin-bottom: 8px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
             line-height: 1.2;
@@ -680,23 +681,34 @@
 
                 if (progress === 100) {
                     clearInterval(interval);
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         const submission = {
                             filename: file.name,
                             title,
                             category,
-                            desc,
+                            description: desc,
                             email,
-                            status: 'Pending',
                             date: new Date().toISOString()
                         };
 
-                        // Store metadata in localStorage
-                        const submissions = JSON.parse(localStorage.getItem('video_submissions') || '[]');
-                        submissions.push(submission);
-                        localStorage.setItem('video_submissions', JSON.stringify(submissions));
+                        try {
+                            const response = await fetch('/api/submit-video', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(submission)
+                            });
 
-                        alert('Your video has been sent to admin for review.');
+                            if (response.ok) {
+                                alert('Your video has been sent to admin for review.');
+                            } else {
+                                alert('Failed to submit video. Please try again.');
+                            }
+                        } catch (err) {
+                            console.error('Submission error:', err);
+                            alert('An error occurred during submission.');
+                        }
 
                         // Reset UI
                         event.target.reset();
@@ -737,17 +749,12 @@
 
         const categories = ['TikTok', 'Actress', 'Desi', 'Rape', 'Pakistan', 'India', 'Afghan', 'Bangal', 'Arab'];
 
-        const videoData = Array.from({ length: 40 }, (_, i) => ({
-            id: i + 1,
-            title: `Exclusive Video Content #${i + 1} - Premium Pick`,
-            thumb: `https://picsum.photos/seed/vh${i + 1}/400/225`,
-            category: categories[Math.floor(Math.random() * categories.length)]
-        }));
+        let videoData = []; // To be filled from API
 
         const grid = document.getElementById('main-grid');
         let currentFilter = 'All';
 
-        function filterByCategory(category) {
+        async function filterByCategory(category) {
             currentFilter = category;
             document.querySelectorAll('.subcategory-item').forEach(item => {
                 item.classList.remove('active');
@@ -763,7 +770,18 @@
                 catName.innerText = category;
             }
 
-            renderGrid();
+            try {
+                // Fetch filtered data
+                const endpoint = category === 'All' ? '/api/videos' : `/api/category/${encodeURIComponent(category)}`;
+                const response = await fetch(endpoint);
+                if (!response.ok) throw new Error('API Error');
+                videoData = await response.json();
+                renderGrid();
+            } catch (err) {
+                console.error("Filter error:", err);
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #888;">Failed to load category videos.</div>';
+            }
+
             if (window.innerWidth < 768) toggleDrawer(false);
         }
 
@@ -782,9 +800,9 @@
 
             filtered.forEach((video, index) => {
                 html += `
-                <div class="card" onclick="navigateToAd(${video.id})">
+                <div class="card" onclick="navigateToAd('${video.id}')">
                     <div class="card-img-container">
-                        <img src="${video.thumb}" alt="${video.title}" loading="lazy">
+                        <img src="${video.thumbnail}" alt="${video.title}" loading="lazy">
                         <div class="overlay">
                             <span class="overlay-title">${video.title}</span>
                             <span class="overlay-accent">${video.category}</span>
@@ -794,7 +812,7 @@
                         <div class="card-title">${video.title}</div>
                         <div class="card-footer">
                             <span style="font-size:0.75rem; color:#666">${video.category}</span>
-                            <button class="share-btn" onclick="shareVideo(event, ${video.id})">
+                            <button class="share-btn" onclick="shareVideo(event, '${video.id}')">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></svg>
                                 Share
                             </button>
@@ -836,8 +854,20 @@
             });
         }
 
-        renderGrid();
-        if (window.innerWidth > 900) toggleSubcategories();
+        async function init() {
+            try {
+                const response = await fetch('/api/videos');
+                if (!response.ok) throw new Error('API failed');
+                videoData = await response.json();
+                renderGrid();
+                if (window.innerWidth > 900) toggleSubcategories();
+            } catch (err) {
+                console.error("Failed to load videos:", err);
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #888;">Failed to load videos. Please try again later.</div>';
+            }
+        }
+
+        init();
     </script>
 </body>
 

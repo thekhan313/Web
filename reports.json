@@ -1,0 +1,31 @@
+[
+    {
+        "id": "report_001",
+        "type": "report",
+        "title": "Reported Content",
+        "description": "Video ID #482 flagged for inappropriate content by multiple users.",
+        "videoId": "482",
+        "reportedBy": [
+            "user1@example.com",
+            "user2@example.com"
+        ],
+        "createdAt": "2026-01-29T14:12:45Z",
+        "status": "unread"
+    },
+    {
+        "id": "system_001",
+        "type": "system",
+        "title": "System Update",
+        "description": "Backup completed successfully. All data is secured.",
+        "createdAt": "2026-01-29T16:45:00Z",
+        "status": "unread"
+    },
+    {
+        "id": "system_002",
+        "type": "system",
+        "title": "Storage Warning",
+        "description": "Server storage is at 75% capacity. Consider archiving old videos.",
+        "createdAt": "2026-01-28T10:30:00Z",
+        "status": "read"
+    }
+]

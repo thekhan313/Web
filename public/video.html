@@ -925,23 +925,34 @@
 
                 if (progress === 100) {
                     clearInterval(interval);
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         const submission = {
                             filename: file.name,
                             title,
                             category,
-                            desc,
+                            description: desc,
                             email,
-                            status: 'Pending',
                             date: new Date().toISOString()
                         };
 
-                        // Store metadata in localStorage
-                        const submissions = JSON.parse(localStorage.getItem('video_submissions') || '[]');
-                        submissions.push(submission);
-                        localStorage.setItem('video_submissions', JSON.stringify(submissions));
+                        try {
+                            const response = await fetch('/api/submit-video', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(submission)
+                            });
 
-                        alert('Your video has been sent to admin for review.');
+                            if (response.ok) {
+                                alert('Your video has been sent to admin for review.');
+                            } else {
+                                alert('Failed to submit video. Please try again.');
+                            }
+                        } catch (err) {
+                            console.error('Submission error:', err);
+                            alert('An error occurred during submission.');
+                        }
 
                         // Reset UI
                         event.target.reset();
@@ -992,33 +1003,64 @@
                 if (item.innerText === category) item.classList.add('active');
             });
 
-            renderRecommendations();
+            // Filter recommendations locally
+            const filtered = category === 'All' ? allRecommendedVideos : allRecommendedVideos.filter(v => v.category === category);
+            renderRecommendations(filtered);
+
             if (window.innerWidth < 768) toggleDrawer(false);
         }
 
         const urlParams = new URLSearchParams(window.location.search);
-        const videoId = urlParams.get('video') || '1';
+        const videoId = urlParams.get('video');
+        let allRecommendedVideos = []; // Global store for filtering
 
-        document.getElementById('main-title').textContent = `Premium Video Content #${videoId}`;
-        document.getElementById('main-desc').textContent = `Experience high-quality entertainment featuring Video #${videoId}. This premium content is optimized for the best viewing experience on VideoHub. Click the comments button below the player to join the discussion!`;
-        document.getElementById('view-count-text').textContent = `${(Math.random() * 5 + 1).toFixed(1)}M views`;
+        // Initial UI state
+        if (!videoId) {
+            document.body.innerHTML = '<div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #fff;"><h1>Video ID Missing</h1><p>Please return to the <a href="index.html" style="color: var(--accent-color);">homepage</a>.</p></div>';
+        }
 
-        // 2. Recommendations Logic
+        async function fetchVideoDetails() {
+            try {
+                const response = await fetch(`/api/video/${videoId}`);
+                if (!response.ok) throw new Error('Video not found');
+                const video = await response.json();
+
+                // Update Metadata
+                document.title = `VideoHub - ${video.title}`;
+                document.getElementById('main-title').textContent = video.title;
+                document.getElementById('main-desc').textContent = video.desc || `Experience high-quality entertainment featuring ${video.title}. This premium content is optimized for the best viewing experience on VideoHub.`;
+                document.getElementById('view-count-text').textContent = `${(video.views / 1000000).toFixed(1)}M views`;
+
+                // Update Player
+                const player = document.getElementById('main-player');
+                player.src = video.videoUrl;
+
+                return video;
+            } catch (err) {
+                console.error("Error loading video:", err);
+                document.querySelector('.player-content').innerHTML = '<div style="text-align: center; padding: 5rem; background: #111; border-radius: 8px; border: 1px dashed #333;"><h2 style="color: var(--accent-color);">404: Video Not Found</h2><p style="color: #888; margin-top: 10px;">The video you are looking for does not exist or has been removed.</p><button onclick="window.location.href=\'index.html\'" style="margin-top: 20px; background: var(--accent-color); border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 4px;">Back to Home</button></div>';
+                return null;
+            }
+        }
+
+        async function fetchRecommendations() {
+            try {
+                const response = await fetch(`/api/video/${videoId}/recommended`);
+                if (!response.ok) return;
+                allRecommendedVideos = await response.json();
+                renderRecommendations(allRecommendedVideos);
+            } catch (err) {
+                console.error("Error loading recommendations:", err);
+            }
+        }
+
         const recGrid = document.getElementById('rec-grid');
-        const recData = Array.from({ length: 40 }, (_, i) => ({
-            id: 200 + i,
-            title: `Check this out: Viral Clip #${i + 1}`,
-            thumb: `https://picsum.photos/seed/pv${i + 1}/400/225`,
-            category: categories[Math.floor(Math.random() * categories.length)]
-        }));
 
-        function renderRecommendations() {
-            const filtered = currentFilter === 'All' ? recData : recData.filter(v => v.category === currentFilter);
-
-            recGrid.innerHTML = filtered.map(v => `
-                <div class="card" onclick="goToAdPage(${v.id})">
+        function renderRecommendations(videos) {
+            recGrid.innerHTML = videos.map(v => `
+                <div class="card" onclick="goToAdPage('${v.id}')">
                     <div class="card-thumb">
-                        <img src="${v.thumb}" alt="${v.title}" loading="lazy">
+                        <img src="${v.thumbnail}" alt="${v.title}" loading="lazy">
                         <div class="card-overlay">
                             <span class="overlay-title">${v.title}</span>
                         </div>
@@ -1027,14 +1069,14 @@
                         <div class="card-title">${v.title}</div>
                         <div class="card-footer">
                             <span style="font-size:0.75rem; color:#666">${v.category}</span>
-                            <button class="card-share" onclick="copyShareUrl(event, ${v.id})">Share</button>
+                            <button class="card-share" onclick="copyShareUrl(event, '${v.id}')">Share</button>
                         </div>
                     </div>
                 </div>
             `).join('');
 
-            if (filtered.length === 0) {
-                recGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #666;">No videos found in this category.</div>';
+            if (videos.length === 0) {
+                recGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #666;">No similar videos found.</div>';
             }
         }
 
@@ -1098,7 +1140,16 @@
             if (document.hidden) player.pause();
         });
 
-        renderRecommendations();
+        // Initial Load
+        async function init() {
+            const video = await fetchVideoDetails();
+            if (video) {
+                await fetchRecommendations();
+            }
+            if (window.innerWidth > 900) toggleSubcategories();
+        }
+
+        init();
     </script>
 </body>
 

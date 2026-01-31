@@ -501,23 +501,34 @@
 
                 if (progress === 100) {
                     clearInterval(interval);
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         const submission = {
                             filename: file.name,
                             title,
                             category,
-                            desc,
+                            description: desc,
                             email,
-                            status: 'Pending',
                             date: new Date().toISOString()
                         };
 
-                        // Store metadata in localStorage
-                        const submissions = JSON.parse(localStorage.getItem('video_submissions') || '[]');
-                        submissions.push(submission);
-                        localStorage.setItem('video_submissions', JSON.stringify(submissions));
+                        try {
+                            const response = await fetch('/api/submit-video', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(submission)
+                            });
 
-                        alert('Your video has been sent to admin for review.');
+                            if (response.ok) {
+                                alert('Your video has been sent to admin for review.');
+                            } else {
+                                alert('Failed to submit video. Please try again.');
+                            }
+                        } catch (err) {
+                            console.error('Submission error:', err);
+                            alert('An error occurred during submission.');
+                        }
 
                         // Reset UI
                         event.target.reset();

@@ -1,0 +1,56 @@
+[
+    {
+        "id": "1",
+        "title": "Mountain Serenity",
+        "category": "Nature",
+        "thumbnail": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop&q=60",
+        "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        "views": 1245678,
+        "createdAt": "2026-01-20T10:00:00Z"
+    },
+    {
+        "id": "2",
+        "title": "Ocean Waves",
+        "category": "Relaxing",
+        "thumbnail": "https://images.unsplash.com/photo-1505118380757-91f5f5832de0?w=800&auto=format&fit=crop&q=60",
+        "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+        "views": 850432,
+        "createdAt": "2026-01-21T12:30:00Z"
+    },
+    {
+        "id": "3",
+        "title": "City Lights",
+        "category": "Urban",
+        "thumbnail": "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&auto=format&fit=crop&q=60",
+        "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        "views": 2109450,
+        "createdAt": "2026-01-22T15:45:00Z"
+    },
+    {
+        "id": "4",
+        "title": "Nature Trails",
+        "category": "Adventure",
+        "thumbnail": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&auto=format&fit=crop&q=60",
+        "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        "views": 567890,
+        "createdAt": "2026-01-23T09:15:00Z"
+    },
+    {
+        "id": "5",
+        "title": "Space Journey",
+        "category": "Sci-Fi",
+        "thumbnail": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=60",
+        "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+        "views": 3456789,
+        "createdAt": "2026-01-24T18:20:00Z"
+    },
+    {
+        "id": "6",
+        "title": "Night Sky",
+        "category": "Science",
+        "thumbnail": "https://images.unsplash.com/photo-1532667449560-72a95c8d381b?w=800&auto=format&fit=crop&q=60",
+        "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+        "views": 987654,
+        "createdAt": "2026-01-25T21:00:00Z"
+    }
+]

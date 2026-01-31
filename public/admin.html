@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoHub Admin - Control Panel</title>
+    <style>
+        /* PornHub-style Color Palette */
+        :root {
+            --bg-color: #181818;
+            --text-color: #FFFFFF;
+            --accent-color: #FF9900;
+            --card-border: #2C2C2C;
+            --input-bg: #252525;
+            --danger: #ff4444;
+            --success: #00c851;
+            --drawer-bg: #181818;
+            --drawer-width: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: #000;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .drawer-toggle {
+            cursor: pointer;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .drawer-toggle:hover {
+            color: var(--accent-color);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        header h1 span {
+            background: var(--accent-color);
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 2px;
+        }
+
+        /* Admin UI Components */
+        .notification-wrapper {
+            position: relative;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+
+        .notification-icon {
+            color: #ccc;
+            transition: color 0.2s;
+        }
+
+        .notification-icon:hover {
+            color: var(--accent-color);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 2px 5px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        /* Modals */
+        .admin-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .admin-modal-content {
+            background-color: #111;
+            margin: auto;
+            padding: 2rem;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 15px;
+        }
+
+        .close-modal:hover {
+            color: #fff;
+        }
+
+        /* Notification List */
+        .notif-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .notif-item {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notif-item:hover {
+            background: #222;
+        }
+
+        .notif-title {
+            font-weight: bold;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+        }
+
+        .notif-time {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logout-btn {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            background: transparent;
+            border: 1px solid #444;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Login Section */
+        #login-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .login-card {
+            background: #000;
+            padding: 2.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-card h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #bbb;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        /* Admin Content Area */
+        #admin-content {
+            display: none;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background: #000;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+        }
+
+        .panel-card h3 {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.5rem;
+            color: var(--accent-color);
+        }
+
+        /* Video List */
+        .video-list-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--card-border);
+            align-items: center;
+            background: #111;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .video-list-item img {
+            width: 100px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #333;
+        }
+
+        .video-details {
+            flex: 1;
+        }
+
+        .video-details h4 {
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .video-details p {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            border-radius: 2px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            border: 1px solid transparent;
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* Responsive for Video Review Screen */
+        @media (max-width: 900px) {
+            #video-review-screen>div {
+                padding: 1rem !important;
+            }
+
+            #video-review-screen>div>div:nth-child(2) {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+
+
+    <header>
+        <div class="header-left">
+            <h1 onclick="window.location.href='index.html'">Admin<span>PANEL</span></h1>
+        </div>
+        <div class="header-actions">
+            <div class="notification-wrapper" onclick="toggleNotifications()">
+                <div class="notification-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" />
+                    </svg>
+                </div>
+                <span class="notification-badge">3</span>
+            </div>
+            <div class="search-trigger" onclick="window.location.href='search.html'"
+                style="cursor:pointer; color: var(--accent-color);" title="Search">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                </svg>
+            </div>
+            <button id="logout-btn" class="logout-btn" style="display: none;" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Login Section -->
+        <section id="login-section">
+            <div class="login-card">
+                <h2>Admin Login</h2>
+                <div id="error-msg"
+                    style="color: var(--danger); font-size: 0.85rem; margin-bottom: 1rem; text-align: center; display: none;">
+                    Invalid credentials. Try admin/admin123</div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password">
+                </div>
+                <button class="btn-primary" onclick="login()">Sign In</button>
+            </div>
+        </section>
+
+        <!-- Admin Content Section -->
+        <section id="admin-content">
+            <div class="dashboard-grid">
+                <!-- Left: Upload Form -->
+                <div class="panel-card">
+                    <h3>Upload New Video</h3>
+                    <div class="form-group">
+                        <label>Video Title</label>
+                        <input type="text" id="video-title" placeholder="e.g. Hiking Adventure">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="video-category">
+                            <option value="TikTok">TikTok</option>
+                            <option value="Actress">Actress</option>
+                            <option value="Desi">Desi</option>
+                            <option value="Rape">Rape</option>
+                            <option value="Pakistan">Pakistan</option>
+                            <option value="India">India</option>
+                            <option value="Afghan">Afghan</option>
+                            <option value="Bangal">Bangal</option>
+                            <option value="Arab">Arab</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="video-desc" rows="3" placeholder="Tell viewers about this video"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Thumbnail URL</label>
+                        <input type="text" id="video-thumb" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label>Video URL (.mp4)</label>
+                        <input type="text" id="video-url" placeholder="https://...">
+                    </div>
+                    <button class="btn-primary" onclick="addVideo()">Post Video</button>
+                </div>
+
+                <!-- Right: Video List -->
+                <div class="panel-card">
+                    <h3>Manage Videos (<span id="count">0</span>)</h3>
+                    <div id="video-list">
+                        <!-- Items injected here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notif-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <span class="close-modal" onclick="closeModal('notif-modal')">&times;</span>
+            <h3 style="color:var(--accent-color); margin-bottom:1rem;">Notifications</h3>
+            <div class="notif-list">
+                <div class="notif-item" onclick="openNotification('video', 1)">
+                    <div class="notif-title">🎥 New Video Submission</div>
+                    <div>User "John Doe" submitted "Amazing Sunset Timelapse" for review.</div>
+                    <div class="notif-time">2 mins ago</div>
+                </div>
+                <div class="notif-item" onclick="openNotification('video', 2)">
+                    <div class="notif-title">🎥 New Video Submission</div>
+                    <div>User "Jane Smith" submitted "Dance Performance" for review.</div>
+                    <div class="notif-time">15 mins ago</div>
+                </div>
+                <div class="notif-item" onclick="openNotification('system', 3)">
+                    <div class="notif-title">⚙️ System Update</div>
+                    <div>Backup completed successfully.</div>
+                    <div class="notif-time">1 hour ago</div>
+                </div>
+                <div class="notif-item" onclick="openNotification('report', 4)">
+                    <div class="notif-title">⚠️ Reported Content</div>
+                    <div>Video ID #482 flagged for inappropriate content.</div>
+                    <div class="notif-time">3 hours ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Non-Video Notification Detail Modal -->
+    <div id="detail-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <span class="close-modal" onclick="closeModal('detail-modal')">&times;</span>
+            <h3 style="color:var(--accent-color); margin-bottom:1rem;" id="detail-title">Notification Details</h3>
+            <div class="form-group">
+                <label>Type</label>
+                <div id="detail-type" style="color: #ccc; padding: 10px; background: #1a1a1a; border-radius: 4px;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <div id="detail-desc" style="color: #ccc; padding: 10px; background: #1a1a1a; border-radius: 4px;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <div id="detail-date" style="color: #ccc; padding: 10px; background: #1a1a1a; border-radius: 4px;">
+                </div>
+            </div>
+            <button class="btn-primary" onclick="closeModal('detail-modal')">Close</button>
+        </div>
+    </div>
+
+    <!-- Video Submission Review Screen -->
+    <div id="video-review-screen"
+        style="display: none; position: fixed; inset: 0; background: var(--bg-color); z-index: 3000; overflow-y: auto;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+            <!-- Header with Back Button -->
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                <button onclick="closeVideoReview()" class="btn-primary"
+                    style="background: #333; width: auto; padding: 10px 20px;">
+                    ← Back to Admin
+                </button>
+                <h2 style="color: var(--accent-color); margin: 0;">Review Video Submission</h2>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                <!-- Left: Video Player -->
+                <div>
+                    <div
+                        style="background: #000; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; position: relative;">
+                        <video id="review-video" controls style="width: 100%; height: 100%; object-fit: contain;">
+                            <source
+                                src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                                type="video/mp4">
+                        </video>
+                    </div>
+
+                    <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                        <button class="btn-primary" style="flex: 1; background: var(--success);"
+                            onclick="approveSubmission()">
+                            ✓ Approve & Publish
+                        </button>
+                        <button class="btn-primary" style="flex: 1; background: var(--danger);"
+                            onclick="rejectSubmission()">
+                            ✗ Reject
+                        </button>
+                        <button class="btn-primary" style="width: auto; padding: 0 20px;" onclick="downloadVideo()">
+                            ⬇ Download
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Video Details -->
+                <div class="panel-card">
+                    <h3 style="margin-bottom: 1.5rem;">Submission Details</h3>
+
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="review-title" value="Amazing Sunset Timelapse" readonly
+                            style="background: #1a1a1a;">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Category</label>
+                        <input type="text" id="review-category" value="TikTok" readonly style="background: #1a1a1a;">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Submitter Email</label>
+                        <input type="text" id="review-email" value="johndoe@example.com" readonly
+                            style="background: #1a1a1a;">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="review-desc" rows="4" readonly
+                            style="background: #1a1a1a;">A beautiful timelapse of a sunset over the mountains. Shot in 4K resolution with professional camera equipment.</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Submitted On</label>
+                        <input type="text" id="review-date" value="2026-01-29 17:45:32" readonly
+                            style="background: #1a1a1a;">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Status</label>
+                        <div
+                            style="display: inline-block; padding: 5px 15px; background: #ff9900; color: #000; border-radius: 20px; font-weight: bold;">
+                            Pending Review
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Video Modal -->
+    <div id="edit-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <span class="close-modal" onclick="closeModal('edit-modal')">&times;</span>
+            <h3 style="color:var(--accent-color); margin-bottom:1rem;">Edit Video</h3>
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="edit-title">
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="edit-category">
+                    <option value="TikTok">TikTok</option>
+                    <option value="Actress">Actress</option>
+                    <option value="Desi">Desi</option>
+                    <option value="Rape">Rape</option>
+                    <option value="Pakistan">Pakistan</option>
+                    <option value="India">India</option>
+                    <option value="Afghan">Afghan</option>
+                    <option value="Bangal">Bangal</option>
+                    <option value="Arab">Arab</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Thumbnail</label>
+                <input type="text" id="edit-thumb">
+            </div>
+            <div class="form-group">
+                <label>Video URL</label>
+                <input type="text" id="edit-url">
+            </div>
+            <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="admin-modal">
+        <div class="admin-modal-content" style="text-align: center;">
+            <span class="close-modal" onclick="closeModal('delete-modal')">&times;</span>
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="var(--danger)" style="margin-bottom:1rem;">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+            </svg>
+            <h3 style="margin-bottom:1rem;">Delete Video?</h3>
+            <p style="color:#aaa; margin-bottom:2rem;">Are you sure you want to permanently delete this video? This
+                action cannot be undone.</p>
+            <div style="display:flex; gap:1rem; justify-content:center;">
+                <button class="btn-primary" style="background:#444; color:#fff;"
+                    onclick="closeModal('delete-modal')">Cancel</button>
+                <button class="btn-primary" style="background:var(--danger); color:#fff;"
+                    onclick="confirmDelete()">Delete Permanently</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal Logic
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        window.onclick = function (event) {
+            if (event.target.classList.contains('admin-modal')) {
+                event.target.style.display = "none";
+            }
+        }
+
+        // Notification Logic
+        let allNotifications = [];
+        let currentSubmissionId = null;
+
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/admin/notifications');
+                allNotifications = await response.json();
+                updateNotificationBadge();
+                renderNotificationList();
+            } catch (err) {
+                console.error('Error loading notifications:', err);
+            }
+        }
+
+        function updateNotificationBadge() {
+            const unreadCount = allNotifications.filter(n => n.status === 'unread').length;
+            const badge = document.querySelector('.notification-badge');
+            if (badge) {
+                badge.textContent = unreadCount;
+                badge.style.display = unreadCount > 0 ? 'block' : 'none';
+            }
+        }
+
+        function renderNotificationList() {
+            const notifList = document.querySelector('.notif-list');
+            if (!notifList) return;
+
+            if (allNotifications.length === 0) {
+                notifList.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No notifications</div>';
+                return;
+            }
+
+            notifList.innerHTML = allNotifications.map(notif => {
+                const icon = notif.type === 'video' ? '🎥' : (notif.type === 'system' ? '⚙️' : '⚠️');
+                const timeAgo = getTimeAgo(notif.createdAt);
+                return `
+                    <div class="notif-item" onclick="openNotification('${notif.type}', '${notif.id}')" style="${notif.status === 'read' ? 'opacity: 0.6;' : ''}">
+                        <div class="notif-title">${icon} ${notif.title}</div>
+                        <div>${notif.description}</div>
+                        <div class="notif-time">${timeAgo}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        }
+
+        function toggleNotifications() {
+            const modal = document.getElementById('notif-modal');
+            modal.style.display = 'flex';
+        }
+
+        async function openNotification(type, id) {
+            closeModal('notif-modal');
+            const notif = allNotifications.find(n => n.id === id);
+            if (!notif) return;
+
+            // Mark as read
+            if (notif.status === 'unread') {
+                try {
+                    await fetch(`/api/admin/notifications/${id}/read`, { method: 'POST' });
+                    notif.status = 'read';
+                    updateNotificationBadge();
+                } catch (err) {
+                    console.error('Error marking notification as read:', err);
+                }
+            }
+
+            if (type === 'video') {
+                // Open video review screen
+                currentSubmissionId = notif.submissionId;
+                document.getElementById('review-title').value = notif.videoTitle || '';
+                document.getElementById('review-category').value = notif.category || '';
+                document.getElementById('review-email').value = notif.email || '';
+                document.getElementById('review-desc').value = notif.videoDescription || '';
+                document.getElementById('review-date').value = new Date(notif.createdAt).toLocaleString();
+
+                // Update video source
+                const videoPlayer = document.getElementById('review-video');
+                if (notif.videoUrl && !notif.videoUrl.includes('pending')) {
+                    videoPlayer.innerHTML = `<source src="${notif.videoUrl}" type="video/mp4">`;
+                    videoPlayer.load();
+                } else {
+                    // Use placeholder video
+                    videoPlayer.innerHTML = '<source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">';
+                    videoPlayer.load();
+                }
+
+                document.getElementById('video-review-screen').style.display = 'block';
+                document.getElementById('admin-content').style.display = 'none';
+                document.getElementById('login-section').style.display = 'none';
+            } else {
+                // Open detail modal for non-video notifications
+                document.getElementById('detail-title').textContent = notif.title;
+                document.getElementById('detail-type').textContent = type.charAt(0).toUpperCase() + type.slice(1);
+                document.getElementById('detail-desc').textContent = notif.description;
+                document.getElementById('detail-date').textContent = new Date(notif.createdAt).toLocaleString();
+
+                document.getElementById('detail-modal').style.display = 'flex';
+            }
+        }
+
+        function closeVideoReview() {
+            document.getElementById('video-review-screen').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            const video = document.getElementById('review-video');
+            video.pause();
+            video.currentTime = 0;
+            currentSubmissionId = null;
+        }
+
+        async function approveSubmission() {
+            if (!currentSubmissionId) return;
+
+            try {
+                const response = await fetch(`/api/admin/submissions/${currentSubmissionId}/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    alert('Video approved and published successfully!');
+                    closeVideoReview();
+                    await loadNotifications();
+                    await loadVideos();
+                } else {
+                    alert('Failed to approve video');
+                }
+            } catch (err) {
+                console.error('Error approving submission:', err);
+                alert('Error approving video');
+            }
+        }
+
+        async function rejectSubmission() {
+            if (!currentSubmissionId) return;
+
+            const reason = prompt('Reason for rejection (optional):');
+
+            try {
+                const response = await fetch(`/api/admin/submissions/${currentSubmissionId}/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+
+                if (response.ok) {
+                    alert('Video rejected');
+                    closeVideoReview();
+                    await loadNotifications();
+                } else {
+                    alert('Failed to reject video');
+                }
+            } catch (err) {
+                console.error('Error rejecting submission:', err);
+                alert('Error rejecting video');
+            }
+        }
+
+        function downloadVideo() {
+            const videoPlayer = document.getElementById('review-video');
+            const videoSrc = videoPlayer.querySelector('source')?.src;
+            if (videoSrc) {
+                window.open(videoSrc, '_blank');
+            } else {
+                alert('Video URL not available');
+            }
+        }
+
+        // Video Data Management
+        let videos = [];
+        let deleteTargetId = null;
+        let editTargetId = null;
+
+        async function loadVideos() {
+            try {
+                const response = await fetch('/api/admin/videos');
+                videos = await response.json();
+                renderVideos();
+            } catch (err) {
+                console.error('Error loading videos:', err);
+            }
+        }
+
+        function login() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const error = document.getElementById('error-msg');
+
+            if (user === 'admin' && pass === 'admin123') {
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                document.getElementById('logout-btn').style.display = 'block';
+
+                // Load data from backend
+                loadVideos();
+                loadNotifications();
+            } else {
+                error.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            document.getElementById('login-section').style.display = 'flex';
+            document.getElementById('admin-content').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function renderVideos() {
+            const list = document.getElementById('video-list');
+            const count = document.getElementById('count');
+            count.innerText = videos.length;
+
+            list.innerHTML = videos.map(v => `
+                <div class="video-list-item">
+                    <img src="${v.thumbnail || v.thumb}" alt="thumb">
+                    <div class="video-details">
+                        <h4>${v.title} <span style="font-size:0.7rem; background:#333; padding:2px 5px; border-radius:3px; color:var(--accent-color); margin-left:5px;">${v.category}</span></h4>
+                        <p>${v.videoUrl || v.url || ''}</p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-small logout-btn" onclick="openEditModal('${v.id}')">Edit</button>
+                        <button class="btn-small btn-danger" onclick="openDeleteModal('${v.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addVideo() {
+            const title = document.getElementById('video-title').value;
+            const category = document.getElementById('video-category').value;
+            const desc = document.getElementById('video-desc').value;
+            const thumb = document.getElementById('video-thumb').value;
+            const url = document.getElementById('video-url').value;
+
+            if (!title || !thumb || !url) {
+                alert('Please fill in title, thumbnail, and video URL');
+                return;
+            }
+
+            const newVideo = {
+                id: Date.now(),
+                title,
+                category,
+                desc,
+                thumb,
+                url
+            };
+
+            videos.unshift(newVideo);
+            renderVideos();
+
+            // Clear form
+            document.getElementById('video-title').value = '';
+            document.getElementById('video-desc').value = '';
+            document.getElementById('video-thumb').value = '';
+            document.getElementById('video-url').value = '';
+
+            alert('Video added successfully!');
+        }
+
+        // Edit Modal Logic
+        function openEditModal(id) {
+            const video = videos.find(v => v.id === id);
+            if (!video) return;
+
+            editTargetId = id;
+            document.getElementById('edit-title').value = video.title;
+            document.getElementById('edit-category').value = video.category;
+            document.getElementById('edit-thumb').value = video.thumbnail || video.thumb || '';
+            document.getElementById('edit-url').value = video.videoUrl || video.url || '';
+
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+
+        async function saveEdit() {
+            if (!editTargetId) return;
+
+            const title = document.getElementById('edit-title').value;
+            const category = document.getElementById('edit-category').value;
+            const thumbnail = document.getElementById('edit-thumb').value;
+            const videoUrl = document.getElementById('edit-url').value;
+
+            try {
+                const response = await fetch(`/api/admin/videos/${editTargetId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, category, thumbnail, videoUrl })
+                });
+
+                if (response.ok) {
+                    alert('Video updated successfully!');
+                    closeModal('edit-modal');
+                    await loadVideos();
+                    editTargetId = null;
+                } else {
+                    alert('Failed to update video');
+                }
+            } catch (err) {
+                console.error('Error updating video:', err);
+                alert('Error updating video');
+            }
+        }
+
+        // Delete Modal Logic
+        function openDeleteModal(id) {
+            deleteTargetId = id;
+            document.getElementById('delete-modal').style.display = 'flex';
+        }
+
+        async function confirmDelete() {
+            if (!deleteTargetId) return;
+
+            try {
+                const response = await fetch(`/api/admin/videos/${deleteTargetId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Video deleted successfully');
+                    closeModal('delete-modal');
+                    await loadVideos();
+                    deleteTargetId = null;
+                } else {
+                    alert('Failed to delete video');
+                }
+            } catch (err) {
+                console.error('Error deleting video:', err);
+                alert('Error deleting video');
+            }
+        }
+    </script>
+</body>
+
+</html>
