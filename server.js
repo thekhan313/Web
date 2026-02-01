@@ -340,6 +340,49 @@ app.get('/api/admin/notifications', (req, res) => {
     res.json(allNotifications);
 });
 
+// GET /api/admin/notifications/:id - Get single notification detail
+app.get('/api/admin/notifications/:id', (req, res) => {
+    const { id } = req.params;
+
+    // Check if it's a submission notification
+    if (id.startsWith('submission_')) {
+        const submissionId = id.replace('submission_', '');
+        const submissions = getAllSubmissions();
+        const submission = submissions.find(s => s.id === submissionId);
+
+        if (!submission) {
+            return res.status(404).json({ error: "Notification not found" });
+        }
+
+        // Return detailed information
+        return res.json({
+            id: `submission_${submission.id}`,
+            type: 'video',
+            title: submission.title,
+            description: submission.description || '',
+            category: submission.category,
+            email: submission.contactEmail,
+            videoUrl: submission.videoUrl || submission.filename,
+            createdAt: submission.createdAt,
+            status: submission.status
+        });
+    }
+
+    // Check if it's a report notification
+    if (id.startsWith('report_') || id.startsWith('system_')) {
+        const reports = getAllReports();
+        const report = reports.find(r => r.id === id);
+
+        if (!report) {
+            return res.status(404).json({ error: "Notification not found" });
+        }
+
+        return res.json(report);
+    }
+
+    res.status(404).json({ error: "Notification not found" });
+});
+
 // POST /api/admin/notifications/:id/read - Mark notification as read
 app.post('/api/admin/notifications/:id/read', (req, res) => {
     const { id } = req.params;
@@ -560,9 +603,9 @@ app.get('/', (req, res) => {
                 videos.forEach(video => {
                     const card = document.createElement('div');
                     card.className = 'video-card';
-                    card.onclick = () => openPlayer(video.video_url);
+                    card.onclick = () => openPlayer(video.videoUrl);
                     card.innerHTML = '<div class="thumbnail-container">' +
-                            '<img src="' + video.thumbnail_url + '" alt="' + video.title + '">' +
+                            '<img src="' + video.thumbnail + '" alt="' + video.title + '">' +
                             '<div class="play-overlay">' +
                                 '<div class="play-icon">' +
                                     '<svg width="24" height="24" viewBox="0 0 24 24" fill="white">' +
